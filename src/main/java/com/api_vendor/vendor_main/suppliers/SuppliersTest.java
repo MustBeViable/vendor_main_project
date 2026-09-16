@@ -29,7 +29,6 @@ public class SuppliersTest implements CommandLineRunner {
     private final SuppliersRepository suppliersRepository;
 
     public SuppliersTest(SuppliersRepository suppliersRepository) {
-        System.out.println("=== SuppliersTest LUOTIIN ===");
         this.suppliersRepository = suppliersRepository;
     }
 }
