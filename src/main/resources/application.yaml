@@ -1,3 +1,13 @@
 spring:
   application:
     name: vendor_main
+
+  datasource:
+    url: jdbc:mariadb://localhost:3306/test_database
+    username: root
+    password:
+    driver-class-name: org.mariadb.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
