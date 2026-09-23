@@ -1,0 +1,19 @@
+POST http://localhost:8080/api/product-categories
+Content-Type: application/json
+
+{
+  "name": "Urheilu",
+  "description": "Urheiluvälineet",
+  "products": [
+    {
+      "name": "Jalkapallo",
+      "price": 29.90,
+      "stockQuantity": 10
+    },
+    {
+      "name": "Tennismaila",
+      "price": 89.00,
+      "stockQuantity": 5
+    }
+  ]
+}
