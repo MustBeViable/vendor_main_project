@@ -12,7 +12,7 @@ public class Customers {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private Integer id;
 
     @Column(name = "first_name", nullable = false)
     private String firstName;
@@ -26,7 +26,7 @@ public class Customers {
     @Column(name = "phone")
     private String phone;
 
-    @OneToMany(mappedBy = "customer", cascade = {CascadeType.PERSIST, CascadeType.REFRESH})
+    @OneToMany(mappedBy = "customer", cascade = {CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     private List<Orders> orders = new ArrayList<>();
 
     public Customers() {}
@@ -70,7 +70,7 @@ public class Customers {
         this.phone = phone;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -81,5 +81,9 @@ public class Customers {
     public void addOrder(Orders order) {
         orders.add(order);
         order.setCustomer(this);
+    }
+
+    public List<Orders> getOrders() {
+        return orders;
     }
 }

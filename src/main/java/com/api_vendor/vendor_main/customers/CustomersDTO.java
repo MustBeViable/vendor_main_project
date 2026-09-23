@@ -2,7 +2,7 @@ package com.api_vendor.vendor_main.customers;
 
 public class CustomersDTO {
 
-    private int id;
+    private Integer id;
     private String firstName;
     private String lastName;
     private String email;
@@ -11,7 +11,7 @@ public class CustomersDTO {
     public CustomersDTO() {}
 
     public CustomersDTO(
-            int id,
+            Integer id,
             String firstName,
             String lastName,
             String email,
@@ -24,11 +24,11 @@ public class CustomersDTO {
         this.phone = phone;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

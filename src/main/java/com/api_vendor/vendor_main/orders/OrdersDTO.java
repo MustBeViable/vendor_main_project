@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class OrdersDTO {
 
-    private int id;
+    private Integer id;
     private int customerId;
     private LocalDateTime orderDate;
     private LocalDateTime deliveryDate;
@@ -14,7 +14,7 @@ public class OrdersDTO {
     public OrdersDTO() {}
 
     public OrdersDTO(
-            int customerId,
+            Integer customerId,
             LocalDateTime deliveryDate,
             Integer shippingAddressId,
             String status
@@ -26,7 +26,7 @@ public class OrdersDTO {
     }
 
     public OrdersDTO(
-            int id,
+            Integer id,
             int customerId,
             LocalDateTime orderDate,
             LocalDateTime deliveryDate,
@@ -41,11 +41,11 @@ public class OrdersDTO {
         this.status = status;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public int getCustomerId() {
+    public Integer getCustomerId() {
         return customerId;
     }
 
@@ -65,11 +65,11 @@ public class OrdersDTO {
         return status;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public void setCustomerId(int customerId) {
+    public void setCustomerId(Integer customerId) {
         this.customerId = customerId;
     }
 

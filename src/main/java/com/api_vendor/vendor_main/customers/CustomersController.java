@@ -1,9 +1,9 @@
 package com.api_vendor.vendor_main.customers;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.api_vendor.vendor_main.orders.Orders;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/customers")
@@ -21,5 +21,15 @@ public class CustomersController {
         Customers customers = CustomersMapper.toEntity(customersDTO);
 
         return customersRepository.save(customers);
+    }
+
+    @GetMapping("/{id}/orders")
+    public List<Orders> getCustomerOrders(@PathVariable int id) {
+
+        Customers customer = customersRepository
+                .findById(id)
+                .orElseThrow();
+
+        return customer.getOrders();
     }
 }
