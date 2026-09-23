@@ -19,7 +19,11 @@ public class Orders {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customers customer;
 
-    @Column(name = "order_date")
+    @Column(
+            name = "order_date",
+            insertable = false,
+            updatable = false
+    )
     private LocalDateTime orderDate;
 
     @Column(name = "delivery_date")

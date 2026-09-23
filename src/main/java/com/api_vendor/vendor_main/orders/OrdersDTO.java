@@ -64,4 +64,28 @@ public class OrdersDTO {
     public String getStatus() {
         return status;
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setCustomerId(int customerId) {
+        this.customerId = customerId;
+    }
+
+    public void setOrderDate(LocalDateTime orderDate) {
+        this.orderDate = orderDate;
+    }
+
+    public void setDeliveryDate(LocalDateTime deliveryDate) {
+        this.deliveryDate = deliveryDate;
+    }
+
+    public void setShippingAddressId(Integer shippingAddressId) {
+        this.shippingAddressId = shippingAddressId;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }
