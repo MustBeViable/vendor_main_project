@@ -1,9 +1,13 @@
 package com.api_vendor.vendor_main.productcategories;
+
+import com.api_vendor.vendor_main.products.Products;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="productcategories")
-
 public class ProductCategories {
 
     @Id
@@ -16,6 +20,9 @@ public class ProductCategories {
 
     @Column(name="description")
     private String description;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Products> products = new ArrayList<>();
 
     public int getCategoryID(){
         return categoryID;
@@ -39,5 +46,13 @@ public class ProductCategories {
 
     public void setDescription(String description){
         this.description=description;
+    }
+
+    public List<Products> getProducts() {
+        return products;
+    }
+
+    public void setProducts(List<Products> products) {
+        this.products = products;
     }
 }
