@@ -3,9 +3,9 @@ spring:
     name: vendor_main
 
   datasource:
-    url: jdbc:mariadb://localhost:3306/test_database
-    username: root
-    password:
+    url: jdbc:mariadb://localhost:3306/store_app
+    username: db_admin
+    password: secret_password
     driver-class-name: org.mariadb.jdbc.Driver
 
   jpa:
