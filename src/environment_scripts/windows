@@ -1,0 +1,7 @@
+Powershelliin nämä:
+
+$env:DB_NAME="store_app"
+$env:DB_USER="db_admin"
+$env:DB_PASSWORD="secret_password"
+
+mvn spring-boot:run

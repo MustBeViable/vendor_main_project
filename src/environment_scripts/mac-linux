@@ -1,0 +1,5 @@
+export DB_NAME=store_app
+export DB_USER=db_admin
+export DB_PASSWORD=secret_password
+
+mvn spring-boot:run
