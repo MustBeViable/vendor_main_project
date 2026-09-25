@@ -1,0 +1,30 @@
+### Create customer
+POST http://localhost:8081/customers
+Content-Type: application/json
+
+{
+  "firstName": "Elias",
+  "lastName": "Rinne",
+  "email": "elias.rinne@example.fi",
+  "phone": null
+}
+
+> {%
+    client.log("Response: " + JSON.stringify(response.body));
+    client.global.set("customerId", response.body.id.toString());
+%}
+
+
+### Create order
+POST http://localhost:8081/orders
+Content-Type: application/json
+
+{
+  "customerId": {{customerId}},
+  "deliveryDate": "2026-09-30T12:00:00",
+  "shippingAddressId": 100000,
+  "status": "NEW"
+}
+
+### Get orders
+GET http://localhost:8081/customers/1/orders
