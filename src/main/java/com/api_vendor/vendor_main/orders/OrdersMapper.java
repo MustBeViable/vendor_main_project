@@ -1,6 +1,6 @@
 package com.api_vendor.vendor_main.orders;
 
-import com.api_vendor.vendor_main.customer_addresses.CustomerAddresses;
+import com.api_vendor.vendor_main.customeraddresses.CustomerAddresses;
 import com.api_vendor.vendor_main.customers.Customers;
 
 public class OrdersMapper {

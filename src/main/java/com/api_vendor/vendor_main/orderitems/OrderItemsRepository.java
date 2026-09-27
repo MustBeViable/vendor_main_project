@@ -1,4 +1,6 @@
 package com.api_vendor.vendor_main.orderitems;
 
-public interface OrderItemsRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface OrderItemsRepository extends JpaRepository<OrderItems, OrderItemId> {
 }
