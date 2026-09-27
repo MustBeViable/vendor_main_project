@@ -1,0 +1,51 @@
+### GET all orderitems
+GET http://localhost:8081/orderitems
+Accept: application/json
+
+
+### GET existing orderitem
+GET http://localhost:8081/orderitems/1/426
+Accept: application/json
+
+
+### POST new orderitem
+# order 181269 exists
+# product 7 exists
+POST http://localhost:8081/orderitems
+Content-Type: application/json
+
+{
+"orderId": 181269,
+"productId": 7,
+"quantity": 2,
+"unitPrice": 19.90
+}
+
+
+### GET newly created orderitem
+GET http://localhost:8081/orderitems/181269/7
+Accept: application/json
+
+
+### PUT update newly created orderitem
+PUT http://localhost:8081/orderitems/181269/7
+Content-Type: application/json
+
+{
+"quantity": 5,
+"unitPrice": 17.50
+}
+
+
+### GET updated orderitem
+GET http://localhost:8081/orderitems/181269/7
+Accept: application/json
+
+
+### DELETE newly created orderitem
+DELETE http://localhost:8081/orderitems/181269/7
+
+
+### Verify deletion - should return not found/error
+GET http://localhost:8081/orderitems/181269/7
+Accept: application/json

@@ -1,7 +1,7 @@
 package com.api_vendor.vendor_main.orders;
 
-import com.api_vendor.vendor_main.customer_addresses.CustomerAddresses;
-import com.api_vendor.vendor_main.customer_addresses.CustomerAddressesRepository;
+import com.api_vendor.vendor_main.customeraddresses.CustomerAddresses;
+import com.api_vendor.vendor_main.customeraddresses.CustomerAddressesRepository;
 import com.api_vendor.vendor_main.customers.Customers;
 import com.api_vendor.vendor_main.customers.CustomersRepository;
 import org.springframework.web.bind.annotation.*;

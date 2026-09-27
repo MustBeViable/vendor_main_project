@@ -1,4 +1,4 @@
-package com.api_vendor.vendor_main.customer_addresses;
+package com.api_vendor.vendor_main.customeraddresses;
 
 import com.api_vendor.vendor_main.customers.Customers;
 import jakarta.persistence.*;
