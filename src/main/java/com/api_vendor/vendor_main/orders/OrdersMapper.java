@@ -1,3 +1,4 @@
+
 package com.api_vendor.vendor_main.orders;
 
 import com.api_vendor.vendor_main.customeraddresses.CustomerAddresses;
@@ -12,10 +13,7 @@ public class OrdersMapper {
             Customers customer,
             CustomerAddresses shippingAddress
     ) {
-        Orders order = new Orders(
-                customer,
-                shippingAddress
-        );
+        Orders order = new Orders(customer, shippingAddress);
 
         order.setDeliveryDate(dto.getDeliveryDate());
         order.setStatus(dto.getStatus());
@@ -39,5 +37,17 @@ public class OrdersMapper {
                 shippingAddressId,
                 order.getStatus()
         );
+    }
+
+    public static void updateEntity(
+            Orders order,
+            OrdersDTO dto,
+            Customers customer,
+            CustomerAddresses shippingAddress
+    ) {
+        order.setCustomer(customer);
+        order.setShippingAddressId(shippingAddress);
+        order.setDeliveryDate(dto.getDeliveryDate());
+        order.setStatus(dto.getStatus());
     }
 }

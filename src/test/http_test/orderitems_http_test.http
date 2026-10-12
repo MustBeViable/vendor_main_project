@@ -1,51 +1,60 @@
-### GET all orderitems
-GET http://localhost:8081/orderitems
-Accept: application/json
 
-
-### GET existing orderitem
+### 1. GET existing orderitem from populated database
 GET http://localhost:8081/orderitems/1/426
 Accept: application/json
 
 
-### POST new orderitem
-# order 181269 exists
-# product 7 exists
+### 2. POST new orderitem
 POST http://localhost:8081/orderitems
 Content-Type: application/json
 
 {
-"orderId": 181269,
-"productId": 7,
-"quantity": 2,
-"unitPrice": 19.90
+  "orderId": {{orderId}},
+  "productId": 7,
+  "quantity": 2,
+  "unitPrice": 19.90
 }
 
 
-### GET newly created orderitem
-GET http://localhost:8081/orderitems/181269/7
+### 3. GET newly created orderitem
+GET http://localhost:8081/orderitems/{{orderId}}/7
 Accept: application/json
 
 
-### PUT update newly created orderitem
-PUT http://localhost:8081/orderitems/181269/7
+### 4. GET all items belonging to created order
+GET http://localhost:8081/orders/{{orderId}}/items
+Accept: application/json
+
+
+### 5. PUT update orderitem
+PUT http://localhost:8081/orderitems/{{orderId}}/7
 Content-Type: application/json
 
 {
-"quantity": 5,
-"unitPrice": 17.50
+  "quantity": 5,
+  "unitPrice": 17.50
 }
 
 
-### GET updated orderitem
-GET http://localhost:8081/orderitems/181269/7
+### 6. GET updated orderitem
+GET http://localhost:8081/orderitems/{{orderId}}/7
 Accept: application/json
 
 
-### DELETE newly created orderitem
-DELETE http://localhost:8081/orderitems/181269/7
+### 7. DELETE orderitem
+DELETE http://localhost:8081/orderitems/{{orderId}}/7
 
 
-### Verify deletion - should return not found/error
-GET http://localhost:8081/orderitems/181269/7
+### 8. Verify deletion (expected 404)
+GET http://localhost:8081/orderitems/{{orderId}}/7
 Accept: application/json
+
+
+### 9. Verify order has no items
+GET http://localhost:8081/orders/{{orderId}}/items
+Accept: application/json
+
+
+### Optional: GET all orderitems
+# WARNING: Very large result with the populated database.
+# GET http://localhost:8081/orderitems

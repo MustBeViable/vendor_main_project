@@ -1,0 +1,59 @@
+
+### 1. Create supplier address
+POST http://localhost:8081/supplieraddresses
+Content-Type: application/json
+
+{
+  "supplierId": 1,
+  "streetAddress": "Testikatu 10",
+  "postalCode": "00100",
+  "city": "Helsinki",
+  "country": "Finland"
+}
+
+> {%
+    client.log("Created address: " + JSON.stringify(response.body));
+    client.global.set("addressId", response.body.id.toString());
+%}
+
+
+### 2. Get all supplier addresses
+GET http://localhost:8081/supplieraddresses
+Accept: application/json
+
+
+### 3. Get addresses for supplier 1
+GET http://localhost:8081/supplieraddresses?supplierId=1
+Accept: application/json
+
+
+### 4. Get newly created address by ID
+GET http://localhost:8081/supplieraddresses/{{addressId}}
+Accept: application/json
+
+
+### 5. Update newly created address
+PUT http://localhost:8081/supplieraddresses/{{addressId}}
+Content-Type: application/json
+
+{
+  "supplierId": 1,
+  "streetAddress": "Uusi katu 15",
+  "postalCode": "00200",
+  "city": "Espoo",
+  "country": "Finland"
+}
+
+
+### 6. Verify updated address
+GET http://localhost:8081/supplieraddresses/{{addressId}}
+Accept: application/json
+
+
+### 7. Delete newly created address
+DELETE http://localhost:8081/supplieraddresses/{{addressId}}
+
+
+### 8. Verify deletion (expected 404)
+GET http://localhost:8081/supplieraddresses/{{addressId}}
+Accept: application/json

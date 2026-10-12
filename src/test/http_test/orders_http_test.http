@@ -1,4 +1,5 @@
-### Create customer
+
+### 1. Create customer
 POST http://localhost:8081/customers
 Content-Type: application/json
 
@@ -10,21 +11,94 @@ Content-Type: application/json
 }
 
 > {%
-    client.log("Response: " + JSON.stringify(response.body));
+    client.log("Customer: " + JSON.stringify(response.body));
     client.global.set("customerId", response.body.id.toString());
 %}
 
 
-### Create order
+### 2. Create order
 POST http://localhost:8081/orders
 Content-Type: application/json
 
 {
   "customerId": {{customerId}},
-  "deliveryDate": "2026-09-30T12:00:00",
-  "shippingAddressId": 100000,
+  "deliveryDate": "2026-11-01T12:00:00",
+  "shippingAddressId": null,
   "status": "NEW"
 }
 
-### Get orders
-GET http://localhost:8081/customers/1/orders
+> {%
+    client.log("Order: " + JSON.stringify(response.body));
+    client.global.set("orderId", response.body.id.toString());
+%}
+
+
+### 3. GET all orders (paginated)
+GET http://localhost:8081/orders?page=0&size=10
+Accept: application/json
+
+
+### 4. GET orders by status
+GET http://localhost:8081/orders?status=NEW&page=0&size=10
+Accept: application/json
+
+
+### 5. GET orders by customer
+GET http://localhost:8081/orders?customerId={{customerId}}
+Accept: application/json
+
+
+### 6. GET orders by customer and status
+GET http://localhost:8081/orders?customerId={{customerId}}&status=NEW
+Accept: application/json
+
+
+### 7. GET created order by ID
+GET http://localhost:8081/orders/{{orderId}}
+Accept: application/json
+
+
+### 8. GET order items
+GET http://localhost:8081/orders/{{orderId}}/items
+Accept: application/json
+
+
+### 9. PUT update order
+PUT http://localhost:8081/orders/{{orderId}}
+Content-Type: application/json
+
+{
+  "customerId": {{customerId}},
+  "deliveryDate": "2026-11-05T14:00:00",
+  "shippingAddressId": null,
+  "status": "NEW"
+}
+
+
+### 10. PATCH update order status
+PATCH http://localhost:8081/orders/{{orderId}}/status
+Content-Type: application/json
+
+{
+  "status": "PROCESSING"
+}
+
+
+### 11. GET updated order
+GET http://localhost:8081/orders/{{orderId}}
+Accept: application/json
+
+
+### 12. GET invalid order (expected 404)
+GET http://localhost:8081/orders/999999999
+Accept: application/json
+
+
+### 13. DELETE order
+# Run only AFTER deleting its orderitems!
+DELETE http://localhost:8081/orders/{{orderId}}
+
+
+### 14. Verify order deletion (expected 404)
+GET http://localhost:8081/orders/{{orderId}}
+Accept: application/json
