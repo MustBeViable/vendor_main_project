@@ -1,0 +1,78 @@
+package com.api_vendor.vendor_main.products;
+
+import com.api_vendor.vendor_main.productcategories.ProductCategories;
+import com.api_vendor.vendor_main.productcategories.ProductCategoriesRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+public class ProductsService {
+
+    private final ProductsRepository productsRepository;
+    private final ProductCategoriesRepository productCategoriesRepository;
+
+    public ProductsService(ProductsRepository productsRepository,
+                           ProductCategoriesRepository productCategoriesRepository) {
+        this.productsRepository = productsRepository;
+        this.productCategoriesRepository = productCategoriesRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Products> findAll() {
+        return productsRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Products> findByCategory(Integer categoryId) {
+        return productsRepository.findAllByCategory_CategoryID(categoryId);
+    }
+
+    @Transactional(readOnly = true)
+    public Products findById(int id) {
+        return productsRepository.findById(id).orElseThrow();
+    }
+
+    @Transactional
+    public Products create(ProductsDTO dto) {
+        Products product = ProductsMapper.toEntity(dto);
+        attachCategory(product, dto.getCategoryId());
+        return productsRepository.save(product);
+    }
+
+    @Transactional
+    public Products update(int id, ProductsDTO dto) {
+        Products product = productsRepository.findById(id).orElseThrow();
+
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setPrice(dto.getPrice());
+        product.setStockQuantity(dto.getStockQuantity());
+        product.setSupplierId(dto.getSupplierId());
+
+        attachCategory(product, dto.getCategoryId());
+
+        return product;
+    }
+
+    @Transactional
+    public void delete(int id) {
+        productsRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Products updateStock(int id, int newQuantity) {
+        Products product = productsRepository.findById(id).orElseThrow();
+        product.setStockQuantity(newQuantity);
+        return product;
+    }
+
+    private void attachCategory(Products product, Integer categoryId) {
+        if (categoryId == null) return;
+        ProductCategories category = productCategoriesRepository
+                .findById(categoryId)
+                .orElseThrow();
+        product.setCategory(category);
+    }
+}
