@@ -1,5 +1,4 @@
-
-### 1. Create supplier address
+### 1. POST address and save new addressId
 POST http://localhost:8081/supplieraddresses
 Content-Type: application/json
 
@@ -12,27 +11,19 @@ Content-Type: application/json
 }
 
 > {%
-    client.log("Created address: " + JSON.stringify(response.body));
-    client.global.set("addressId", response.body.id.toString());
+  client.test("Address created", function () { client.assert(response.status === 201, "Expected 201"); });
+  if (response.status === 201) client.global.set("addressId", String(response.body.id));
 %}
 
-
-### 2. Get all supplier addresses
-GET http://localhost:8081/supplieraddresses
-Accept: application/json
-
-
-### 3. Get addresses for supplier 1
+### 2. GET addresses for supplier 1 (small result set)
 GET http://localhost:8081/supplieraddresses?supplierId=1
 Accept: application/json
 
-
-### 4. Get newly created address by ID
+### 3. GET new address by saved ID
 GET http://localhost:8081/supplieraddresses/{{addressId}}
 Accept: application/json
 
-
-### 5. Update newly created address
+### 4. PUT only the new address
 PUT http://localhost:8081/supplieraddresses/{{addressId}}
 Content-Type: application/json
 
@@ -44,16 +35,13 @@ Content-Type: application/json
   "country": "Finland"
 }
 
-
-### 6. Verify updated address
+### 5. Verify update
 GET http://localhost:8081/supplieraddresses/{{addressId}}
 Accept: application/json
 
-
-### 7. Delete newly created address
+### 6. DELETE only the newly created address
 DELETE http://localhost:8081/supplieraddresses/{{addressId}}
 
-
-### 8. Verify deletion (expected 404)
+### 7. Verify deletion: expected 404
 GET http://localhost:8081/supplieraddresses/{{addressId}}
 Accept: application/json
