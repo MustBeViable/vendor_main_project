@@ -1,0 +1,36 @@
+
+### Create supplier address
+POST http://localhost:8081/supplieraddresses
+Content-Type: application/json
+
+{
+"supplierId": 1,
+"streetAddress": "Testikatu 10",
+"postalCode": "00100",
+"city": "Helsinki",
+"country": "Finland"
+}
+
+### Get all supplier addresses
+GET http://localhost:8081/supplieraddresses
+
+### Get addresses for supplier 1
+GET http://localhost:8081/supplieraddresses?supplierId=1
+
+### Get address by ID
+GET http://localhost:8081/supplieraddresses/1
+
+### Update address
+PUT http://localhost:8081/supplieraddresses/1
+Content-Type: application/json
+
+{
+"supplierId": 1,
+"streetAddress": "Uusi katu 15",
+"postalCode": "00200",
+"city": "Helsinki",
+"country": "Finland"
+}
+
+### Delete address
+DELETE http://localhost:8081/supplieraddresses/1
