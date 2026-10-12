@@ -1,106 +1,56 @@
 package com.api_vendor.vendor_main.orderitems;
 
-import com.api_vendor.vendor_main.orders.Orders;
-import com.api_vendor.vendor_main.orders.OrdersRepository;
-import com.api_vendor.vendor_main.products.Products;
-import com.api_vendor.vendor_main.products.ProductsRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/orderitems")
 public class OrderItemsController {
 
-    private final OrderItemsRepository orderItemsRepository;
-    private final OrdersRepository ordersRepository;
-    private final ProductsRepository productsRepository;
+    private final OrderItemsService service;
 
-    public OrderItemsController(
-            OrderItemsRepository orderItemsRepository,
-            OrdersRepository ordersRepository,
-            ProductsRepository productsRepository
-    ) {
-        this.orderItemsRepository = orderItemsRepository;
-        this.ordersRepository = ordersRepository;
-        this.productsRepository = productsRepository;
+    public OrderItemsController(OrderItemsService service) {
+        this.service = service;
     }
 
     @GetMapping
-    public List<OrderItemsDTO> getAllOrderItems() {
-        return orderItemsRepository.findAll()
-                .stream()
-                .map(OrderItemsMapper::toDTO)
-                .toList();
+    public Page<OrderItemsDTO> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return service.getAll(page, size);
     }
 
     @GetMapping("/{orderId}/{productId}")
-    public OrderItemsDTO getOrderItem(
+    public OrderItemsDTO getById(
             @PathVariable Integer orderId,
             @PathVariable Integer productId
     ) {
-
-        OrderItemId id = new OrderItemId(orderId, productId);
-
-        OrderItems orderItem = orderItemsRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order item not found"));
-
-        return OrderItemsMapper.toDTO(orderItem);
+        return service.getById(orderId, productId);
     }
 
     @PostMapping
-    public OrderItemsDTO createOrderItem(
-            @RequestBody OrderItemsDTO dto
-    ) {
-
-        Orders order = ordersRepository.findById(dto.getOrderId())
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        Products product = productsRepository.findById(dto.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
-        OrderItems orderItem =
-                OrderItemsMapper.toEntity(dto, order, product);
-
-        OrderItems saved =
-                orderItemsRepository.save(orderItem);
-
-        return OrderItemsMapper.toDTO(saved);
+    @ResponseStatus(HttpStatus.CREATED)
+    public OrderItemsDTO create(@RequestBody OrderItemsDTO dto) {
+        return service.create(dto);
     }
 
     @PutMapping("/{orderId}/{productId}")
-    public OrderItemsDTO updateOrderItem(
+    public OrderItemsDTO update(
             @PathVariable Integer orderId,
             @PathVariable Integer productId,
             @RequestBody OrderItemsDTO dto
     ) {
-
-        OrderItemId id = new OrderItemId(orderId, productId);
-
-        OrderItems existing = orderItemsRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order item not found"));
-
-        existing.setQuantity(dto.getQuantity());
-        existing.setUnitPrice(dto.getUnitPrice());
-
-        OrderItems saved =
-                orderItemsRepository.save(existing);
-
-        return OrderItemsMapper.toDTO(saved);
+        return service.update(orderId, productId, dto);
     }
 
     @DeleteMapping("/{orderId}/{productId}")
-    public void deleteOrderItem(
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(
             @PathVariable Integer orderId,
             @PathVariable Integer productId
     ) {
-
-        OrderItemId id = new OrderItemId(orderId, productId);
-
-        if (!orderItemsRepository.existsById(id)) {
-            throw new RuntimeException("Order item not found");
-        }
-
-        orderItemsRepository.deleteById(id);
+        service.delete(orderId, productId);
     }
 }
