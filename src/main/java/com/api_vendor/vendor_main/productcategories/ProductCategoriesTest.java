@@ -2,8 +2,10 @@ package com.api_vendor.vendor_main.productcategories;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 
 @Component
+@Profile("manual-test-data")
 public class ProductCategoriesTest implements CommandLineRunner {
 
     @Override

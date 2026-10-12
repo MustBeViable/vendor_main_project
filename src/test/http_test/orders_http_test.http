@@ -1,30 +1,101 @@
-### Create customer
+### 1. Create customer (saves customerId)
 POST http://localhost:8081/customers
 Content-Type: application/json
 
 {
-  "firstName": "Elias",
-  "lastName": "Rinne",
-  "email": "elias.rinne@example.fi",
+  "firstName": "Test",
+  "lastName": "Customer",
+  "email": "api-test-{{$timestamp}}@example.test",
   "phone": null
 }
 
 > {%
-    client.log("Response: " + JSON.stringify(response.body));
-    client.global.set("customerId", response.body.id.toString());
+  client.test("Customer created", function () { client.assert(response.status === 201, "Expected 201"); });
+  if (response.status === 201) client.global.set("customerId", String(response.body.id));
 %}
 
-
-### Create order
+### 2. Create empty order (saves orderId)
 POST http://localhost:8081/orders
 Content-Type: application/json
 
 {
   "customerId": {{customerId}},
-  "deliveryDate": "2026-09-30T12:00:00",
-  "shippingAddressId": 100000,
+  "deliveryDate": "2026-11-01T12:00:00",
+  "shippingAddressId": null,
   "status": "NEW"
 }
 
-### Get orders
-GET http://localhost:8081/customers/1/orders
+> {%
+  client.test("Order created", function () { client.assert(response.status === 201, "Expected 201"); });
+  if (response.status === 201) client.global.set("orderId", String(response.body.id));
+%}
+
+### 3. List orders (paged; never load all orders at once)
+GET http://localhost:8081/orders?page=0&size=10
+Accept: application/json
+
+### 4. Search orders by status
+GET http://localhost:8081/orders?status=NEW&page=0&size=10
+Accept: application/json
+
+### 5. Search orders by customer ID
+GET http://localhost:8081/orders?customerId={{customerId}}&page=0&size=10
+Accept: application/json
+
+### 6. Search orders by customer and status
+GET http://localhost:8081/orders?customerId={{customerId}}&status=NEW&page=0&size=10
+Accept: application/json
+
+### 7. Customer's orders (returns Page<OrdersDTO>, not JPA entities)
+GET http://localhost:8081/customers/{{customerId}}/orders?page=0&size=10
+Accept: application/json
+
+### 8. Get created order by ID
+GET http://localhost:8081/orders/{{orderId}}
+Accept: application/json
+
+### 9. Get order lines (empty until orderitems test creates one)
+GET http://localhost:8081/orders/{{orderId}}/items
+Accept: application/json
+
+### 10. Update order
+PUT http://localhost:8081/orders/{{orderId}}
+Content-Type: application/json
+
+{
+  "customerId": {{customerId}},
+  "deliveryDate": "2026-11-05T14:00:00",
+  "shippingAddressId": null,
+  "status": "NEW"
+}
+
+### 11. Update order status (allowed; cancellation handled separately)
+PATCH http://localhost:8081/orders/{{orderId}}/status
+Content-Type: application/json
+
+{
+  "status": "PROCESSING"
+}
+
+### 12. Verify update
+GET http://localhost:8081/orders/{{orderId}}
+Accept: application/json
+
+### 13. Missing order: expected 404
+GET http://localhost:8081/orders/999999999
+Accept: application/json
+
+### 14. Cancel: currently expected 409 until stock-safe cancellation is implemented
+PATCH http://localhost:8081/orders/{{orderId}}/status
+Content-Type: application/json
+
+{
+  "status": "CANCELLED"
+}
+
+### 15. DELETE empty order only AFTER orderitems test has removed its line
+DELETE http://localhost:8081/orders/{{orderId}}
+
+### 16. Verify deletion: expected 404
+GET http://localhost:8081/orders/{{orderId}}
+Accept: application/json

@@ -1,0 +1,47 @@
+### 1. POST address and save new addressId
+POST http://localhost:8081/supplieraddresses
+Content-Type: application/json
+
+{
+  "supplierId": 1,
+  "streetAddress": "Testikatu 10",
+  "postalCode": "00100",
+  "city": "Helsinki",
+  "country": "Finland"
+}
+
+> {%
+  client.test("Address created", function () { client.assert(response.status === 201, "Expected 201"); });
+  if (response.status === 201) client.global.set("addressId", String(response.body.id));
+%}
+
+### 2. GET addresses for supplier 1 (small result set)
+GET http://localhost:8081/supplieraddresses?supplierId=1
+Accept: application/json
+
+### 3. GET new address by saved ID
+GET http://localhost:8081/supplieraddresses/{{addressId}}
+Accept: application/json
+
+### 4. PUT only the new address
+PUT http://localhost:8081/supplieraddresses/{{addressId}}
+Content-Type: application/json
+
+{
+  "supplierId": 1,
+  "streetAddress": "Uusi katu 15",
+  "postalCode": "00200",
+  "city": "Espoo",
+  "country": "Finland"
+}
+
+### 5. Verify update
+GET http://localhost:8081/supplieraddresses/{{addressId}}
+Accept: application/json
+
+### 6. DELETE only the newly created address
+DELETE http://localhost:8081/supplieraddresses/{{addressId}}
+
+### 7. Verify deletion: expected 404
+GET http://localhost:8081/supplieraddresses/{{addressId}}
+Accept: application/json

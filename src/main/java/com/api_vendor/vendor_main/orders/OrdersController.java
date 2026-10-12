@@ -1,52 +1,71 @@
+
 package com.api_vendor.vendor_main.orders;
 
-import com.api_vendor.vendor_main.customeraddresses.CustomerAddresses;
-import com.api_vendor.vendor_main.customeraddresses.CustomerAddressesRepository;
-import com.api_vendor.vendor_main.customers.Customers;
-import com.api_vendor.vendor_main.customers.CustomersRepository;
+import com.api_vendor.vendor_main.orderitems.OrderItemsDTO;
+
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/orders")
 public class OrdersController {
 
-    private final OrdersRepository ordersRepository;
-    private final CustomersRepository customersRepository;
-    private final CustomerAddressesRepository customerAddressesRepository;
+    private final OrdersService ordersService;
 
-    public OrdersController(
-            OrdersRepository ordersRepository,
-            CustomersRepository customersRepository,
-            CustomerAddressesRepository customerAddressesRepository
+    public OrdersController(OrdersService ordersService) {
+        this.ordersService = ordersService;
+    }
+
+    @GetMapping
+    public Page<OrdersDTO> getAll(
+            @RequestParam(required = false) Integer customerId,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
     ) {
-        this.ordersRepository = ordersRepository;
-        this.customersRepository = customersRepository;
-        this.customerAddressesRepository = customerAddressesRepository;
+        return ordersService.getAll(
+                customerId, status, page, size
+        );
+    }
+
+    @GetMapping("/{id}")
+    public OrdersDTO getById(@PathVariable Integer id) {
+        return ordersService.getById(id);
+    }
+
+    @GetMapping("/{id}/items")
+    public List<OrderItemsDTO> getItems(@PathVariable Integer id) {
+        return ordersService.getItems(id);
     }
 
     @PostMapping
-    public OrdersDTO createOrder(@RequestBody OrdersDTO ordersDTO) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public OrdersDTO create(@RequestBody OrdersDTO dto) {
+        return ordersService.create(dto);
+    }
 
-        Customers customer = customersRepository
-                .findById(ordersDTO.getCustomerId())
-                .orElseThrow();
+    @PutMapping("/{id}")
+    public OrdersDTO update(
+            @PathVariable Integer id,
+            @RequestBody OrdersDTO dto
+    ) {
+        return ordersService.update(id, dto);
+    }
 
-        CustomerAddresses shippingAddress = null;
+    @PatchMapping("/{id}/status")
+    public OrdersDTO updateStatus(
+            @PathVariable Integer id,
+            @RequestBody OrderStatusDTO dto
+    ) {
+        return ordersService.updateStatus(id, dto);
+    }
 
-        if (ordersDTO.getShippingAddressId() != null) {
-            shippingAddress = customerAddressesRepository
-                    .findById(ordersDTO.getShippingAddressId())
-                    .orElseThrow();
-        }
-
-        Orders order = OrdersMapper.toEntity(
-                ordersDTO,
-                customer,
-                shippingAddress
-        );
-
-        Orders savedOrder = ordersRepository.save(order);
-
-        return OrdersMapper.toDTO(savedOrder);
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Integer id) {
+        ordersService.delete(id);
     }
 }
