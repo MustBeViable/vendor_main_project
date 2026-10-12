@@ -1,10 +1,52 @@
-### Prerequisite: Run orders_http_test.http requests 1 and 2 to set orderId.
 
-### 1. GET existing order item from populated data
-GET http://localhost:8081/orderitems/1/426
+### 1. Create customer
+POST http://localhost:8081/customers
+Content-Type: application/json
+
+{
+  "firstName": "Test",
+  "lastName": "Customer",
+  "email": "orderitem-test-{{$timestamp}}@example.test",
+  "phone": null
+}
+
+> {%
+    client.test("Customer created", function () {
+        client.assert(response.status === 201, "Expected 201");
+    });
+    if (response.status === 201 && response.body.id != null) {
+        client.global.set("customerId", String(response.body.id));
+    }
+%}
+
+
+### 2. Create order and save orderId
+POST http://localhost:8081/orders
+Content-Type: application/json
+
+{
+  "customerId": {{customerId}},
+  "deliveryDate": "2026-11-01T12:00:00",
+  "shippingAddressId": null,
+  "status": "NEW"
+}
+
+> {%
+    client.test("Order created", function () {
+        client.assert(response.status === 201, "Expected 201");
+    });
+    if (response.status === 201 && response.body.id != null) {
+        client.global.set("orderId", String(response.body.id));
+    }
+%}
+
+
+### 3. Verify order exists
+GET http://localhost:8081/orders/{{orderId}}
 Accept: application/json
 
-### 2. POST item into newly created order
+
+### 4. POST orderitem
 POST http://localhost:8081/orderitems
 Content-Type: application/json
 
@@ -16,18 +58,23 @@ Content-Type: application/json
 }
 
 > {%
-  client.test("Item created", function () { client.assert(response.status === 201, "Expected 201"); });
+    client.test("Item created", function () {
+        client.assert(response.status === 201, "Expected 201");
+    });
 %}
 
-### 3. GET created item
+
+### 5. GET created orderitem
 GET http://localhost:8081/orderitems/{{orderId}}/7
 Accept: application/json
 
-### 4. GET created order's items
+
+### 6. GET orderitems belonging to created order
 GET http://localhost:8081/orders/{{orderId}}/items
 Accept: application/json
 
-### 5. PUT item (stock changes need working SQL UPDATE trigger)
+
+### 7. PUT update orderitem
 PUT http://localhost:8081/orderitems/{{orderId}}/7
 Content-Type: application/json
 
@@ -36,23 +83,35 @@ Content-Type: application/json
   "unitPrice": 17.50
 }
 
-### 6. Verify updated item
+
+### 8. Verify updated orderitem
 GET http://localhost:8081/orderitems/{{orderId}}/7
 Accept: application/json
 
-### 7. DELETE created item
-DELETE http://localhost:8081/orderitems/{{orderId}}/7
 
-### 8. Verify deletion: expected 404
+### 9. DELETE orderitem
+DELETE http://localhost:8081/orderitems/{{orderId}}
+
+
+### 10. Verify deletion - expected 404
 GET http://localhost:8081/orderitems/{{orderId}}/7
 Accept: application/json
 
-### 9. Verify order is empty
+
+### 11. Verify order is empty
 GET http://localhost:8081/orders/{{orderId}}/items
 Accept: application/json
 
-### 10. List only 10 items from large populated database
+
+### 12. GET paginated orderitems
 GET http://localhost:8081/orderitems?page=0&size=10
 Accept: application/json
 
-### Follow with orders_http_test.http requests 15 and 16 to delete test order.
+
+### 13. DELETE empty order
+DELETE http://localhost:8081/orders/{{orderId}}
+
+
+### 14. Verify order deletion - expected 404
+GET http://localhost:8081/orders/{{orderId}}
+Accept: application/json
