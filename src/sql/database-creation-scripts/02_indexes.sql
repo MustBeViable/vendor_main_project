@@ -25,7 +25,7 @@ CREATE INDEX IF NOT EXISTS idx_products_stock_quantity
 -- SHOW INDEX FROM orders;
 -- SHOW INDEX FROM products;
 
--- EXPLAIN-todistukset :
+-- EXPLAIN-todistukset. :
 -- EXPLAIN SELECT * FROM products WHERE name LIKE 'Sw%';
 --   key: idx_products_name
 -- EXPLAIN SELECT * FROM products WHERE stock_quantity <= 10;
