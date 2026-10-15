@@ -29,9 +29,9 @@ Tietokannan kaikki 50 tarkistusta onnistuvat, mutta kaikkia toteutettuja tietoka
 
 5. Temporaalisuus (2/2 käytössä tietokannassa)
 
-- [ ] "orders" – API:sta puuttuu tilausten muutoshistorian hakeminen.
-- [ ] "products" – API:sta puuttuu tuotteiden muutoshistorian hakeminen.
-- [ ] "FOR SYSTEM_TIME AS OF" / "FOR SYSTEM_TIME ALL" -historiakyselyitä ei hyödynnetä Java-koodissa.
+- [X] "orders" – API:sta puuttuu tilausten muutoshistorian hakeminen.
+- [X] "products" – API:sta puuttuu tuotteiden muutoshistorian hakeminen.
+- [X] "FOR SYSTEM_TIME AS OF" / "FOR SYSTEM_TIME ALL" -historiakyselyitä ei hyödynnetä Java-koodissa.
 
 6. Käyttöoikeudet
 
