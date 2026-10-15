@@ -61,9 +61,15 @@ public class ProductsController {
         productsService.delete(id);
     }
 
-    @PutMapping("/{id}/stock")
-    public ProductsDTO updateStock(@PathVariable int id,
-                                   @RequestParam int quantity) {
-        return ProductsMapper.toDTO(productsService.updateStock(id, quantity));
+    @PostMapping("/{id}/stock/increase")
+    public ProductsDTO increaseStock(@PathVariable int id,
+                                     @RequestParam int amount) {
+        return ProductsMapper.toDTO(productsService.increaseStock(id, amount));
+    }
+
+    @PostMapping("/{id}/stock/decrease")
+    public ProductsDTO decreaseStock(@PathVariable int id,
+                                     @RequestParam int amount) {
+        return ProductsMapper.toDTO(productsService.decreaseStock(id, amount));
     }
 }

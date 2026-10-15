@@ -72,10 +72,15 @@ public class ProductsService {
     }
 
     @Transactional
-    public Products updateStock(int id, int newQuantity) {
-        Products product = productsRepository.findById(id).orElseThrow();
-        product.setStockQuantity(newQuantity);
-        return product;
+    public Products increaseStock(int id, int amount) {
+        productsRepository.stockIncrease(id, amount);
+        return productsRepository.findById(id).orElseThrow();
+    }
+
+    @Transactional
+    public Products decreaseStock(int id, int amount) {
+        productsRepository.stockDecrease(id, amount);
+        return productsRepository.findById(id).orElseThrow();
     }
 
     private void attachCategory(Products product, Integer categoryId) {
