@@ -1,0 +1,109 @@
+
+### ==========================================
+### 1. ORDERS - KAIKKI VERSIOT
+### Odotettu: 200
+### ==========================================
+
+GET http://localhost:8081/orders/3/history
+Authorization: Basic admin admin_api_password
+
+
+### ==========================================
+### 2. PRODUCTS - KAIKKI VERSIOT
+### Odotettu: 200
+### ==========================================
+
+GET http://localhost:8081/products/7/history
+Authorization: Basic admin admin_api_password
+
+
+### ==========================================
+### 3. ORDERS - AS OF
+### Vaihda asOf historiasta löytyvään
+### voimassaoloaikaan.
+### Odotettu: 200, jos versio oli voimassa.
+### ==========================================
+
+GET http://localhost:8081/orders/3/history?asOf=2026-10-15T12:00:00
+Authorization: Basic admin admin_api_password
+
+
+### ==========================================
+### 4. PRODUCTS - AS OF
+### Vaihda asOf historiasta löytyvään
+### voimassaoloaikaan.
+### ==========================================
+
+GET http://localhost:8081/products/7/history?asOf=2026-10-15T12:00:00
+Authorization: Basic admin admin_api_password
+
+
+### ==========================================
+### 5. ORDERS - EI LÖYDY
+### Odotettu: 404
+### ==========================================
+
+GET http://localhost:8081/orders/999999999/history
+Authorization: Basic admin admin_api_password
+
+
+### ==========================================
+### 6. PRODUCTS - EI LÖYDY
+### Odotettu: 404
+### ==========================================
+
+GET http://localhost:8081/products/999999999/history
+Authorization: Basic admin admin_api_password
+
+
+### ==========================================
+### 7. VIRHEELLINEN ORDER ID
+### Odotettu: 400
+### ==========================================
+
+GET http://localhost:8081/orders/0/history
+Authorization: Basic admin admin_api_password
+
+
+### ==========================================
+### 8. VIRHEELLINEN PRODUCT ID
+### Odotettu: 400
+### ==========================================
+
+GET http://localhost:8081/products/-1/history
+Authorization: Basic admin admin_api_password
+
+
+### ==========================================
+### 9. VIRHEELLINEN AIKA
+### Odotettu: 400
+### ==========================================
+
+GET http://localhost:8081/orders/3/history?asOf=virheellinen
+Authorization: Basic admin admin_api_password
+
+
+### ==========================================
+### 10. EI KIRJAUTUMISTA
+### Odotettu: 401
+### ==========================================
+
+GET http://localhost:8081/orders/3/history
+
+
+### ==========================================
+### 11. EMPLOYEE EI SAA KÄYTTÄÄ
+### Odotettu: 403
+### ==========================================
+
+GET http://localhost:8081/orders/3/history
+Authorization: Basic employee employee_api_password
+
+
+### ==========================================
+### 12. REPORT_VIEWER EI SAA KÄYTTÄÄ
+### Odotettu: 403
+### ==========================================
+
+GET http://localhost:8081/products/7/history
+Authorization: Basic report_viewer report_viewer_api_password
