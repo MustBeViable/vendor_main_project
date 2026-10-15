@@ -18,11 +18,17 @@ public class ProductsController {
 
     @GetMapping
     public List<ProductsDTO> getAll(
-            @RequestParam(required = false) Integer categoryId) {
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Integer maxStock) {
 
         List<Products> products;
 
-        if (categoryId != null) {
+        if (name != null) {
+            products = productsService.findByName(name);
+        } else if (maxStock != null) {
+            products = productsService.findLowStock(maxStock);
+        } else if (categoryId != null) {
             products = productsService.findByCategory(categoryId);
         } else {
             products = productsService.findAll();

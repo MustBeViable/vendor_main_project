@@ -1,4 +1,3 @@
-
 package com.api_vendor.vendor_main.orders;
 
 import com.api_vendor.vendor_main.customers.Customers;
@@ -11,7 +10,6 @@ import com.api_vendor.vendor_main.orderitems.OrderItemsRepository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,11 +52,7 @@ public class OrdersService {
             );
         }
 
-        PageRequest pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by("id").descending()
-        );
+        PageRequest pageable = PageRequest.of(page, size);
 
         String filterStatus = status == null
                 ? null
@@ -67,19 +61,19 @@ public class OrdersService {
         Page<Orders> orders;
 
         if (customerId != null && filterStatus != null) {
-            orders = ordersRepository.findByCustomer_IdAndStatus(
+            orders = ordersRepository.findByCustomer_IdAndStatusOrderByOrderDateDesc(
                     customerId, filterStatus, pageable
             );
         } else if (customerId != null) {
-            orders = ordersRepository.findByCustomer_Id(
+            orders = ordersRepository.findByCustomer_IdOrderByOrderDateDesc(
                     customerId, pageable
             );
         } else if (filterStatus != null) {
-            orders = ordersRepository.findByStatus(
+            orders = ordersRepository.findByStatusOrderByOrderDateDesc(
                     filterStatus, pageable
             );
         } else {
-            orders = ordersRepository.findAll(pageable);
+            orders = ordersRepository.findAllByOrderByOrderDateDesc(pageable);
         }
 
         return orders.map(OrdersMapper::toDTO);
