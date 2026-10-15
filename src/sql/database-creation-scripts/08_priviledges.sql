@@ -25,7 +25,7 @@ IDENTIFIED BY 'another_secret_password';
 
 -- Raportointikäyttäjä.
 CREATE USER IF NOT EXISTS 'report_viewer'@'localhost'
-IDENTIFIED BY 'VAIHDA_REPORT_VIEWER_SALASANA';
+IDENTIFIED BY 'supa_dupa_secret_password';
 
 
 -- Päivitetään salasanat myös jo olemassa oleville käyttäjille.
@@ -34,13 +34,13 @@ ALTER USER 'db_admin'@'localhost'
 IDENTIFIED BY 'secret_password';
 
 ALTER USER 'vendor_app'@'localhost'
-IDENTIFIED BY 'VAIHDA_VENDOR_APP_SALASANA';
+IDENTIFIED BY 'very_very_secret_password';
 
 ALTER USER 'employee'@'localhost'
 IDENTIFIED BY 'another_secret_password';
 
 ALTER USER 'report_viewer'@'localhost'
-IDENTIFIED BY 'VAIHDA_REPORT_VIEWER_SALASANA';
+IDENTIFIED BY 'supa_dupa_secret_password';
 
 
 -- =========================================
