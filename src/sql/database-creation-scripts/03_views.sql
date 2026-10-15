@@ -11,6 +11,7 @@ USE store_app;
 
 CREATE OR REPLACE VIEW customer_orders AS
 SELECT
+    CONCAT(o.id, '-', COALESCE(oi.product_id, 'none')) AS report_row_id,
     o.id AS order_id,
     o.customer_id,
     c.first_name,
