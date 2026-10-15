@@ -1,0 +1,278 @@
+
+### ============================================
+### CUSTOMER ADDRESSES CRUD TESTS
+### VAIN TESTITIETOKANTAAN
+### Suorita pyynnöt järjestyksessä
+### ============================================
+
+### 1. Hae asiakkaiden osoitteita sivutettuna
+GET http://localhost:8081/customeraddresses?page=0&size=10
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("GET customer addresses: 200", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body.content),
+            "Expected Page content");
+        client.assert(response.body.content.length <= 10,
+            "Invalid page size");
+    });
+%}
+
+### 2. Luo asiakkaalle 51914 osoite
+POST http://localhost:8081/customeraddresses
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
+
+{
+  "customerId": 51914,
+  "streetAddress": "HTTP Test Street 10",
+  "postalCode": "00100",
+  "city": "Helsinki",
+  "country": "Finland"
+}
+
+> {%
+    client.test("POST customer address: 201", function () {
+        client.assert(response.status === 201, "Expected 201");
+        client.assert(response.body.id > 0, "Missing address ID");
+        client.assert(response.body.customerId === 51914,
+            "Wrong customer");
+    });
+
+    if (response.status === 201) {
+        client.global.set("testCustomerAddressId",
+            String(response.body.id));
+    }
+%}
+
+### 3. Hae luotu osoite ID:llä
+GET http://localhost:8081/customeraddresses/{{testCustomerAddressId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("GET customer address by ID", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(String(response.body.id) ===
+            String(client.global.get("testCustomerAddressId")),
+            "Wrong address");
+        client.assert(response.body.city === "Helsinki",
+            "Wrong city");
+    });
+%}
+
+### 4. Suodata asiakkaan osoitteet
+GET http://localhost:8081/customeraddresses?customerId=51914&page=0&size=20
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Customer address filtering", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.totalElements >= 1,
+            "Expected at least one address");
+        client.assert(response.body.content.every(x =>
+            x.customerId === 51914
+        ), "Wrong customer in results");
+    });
+%}
+
+### 5. Päivitä asiakkaan osoite
+PUT http://localhost:8081/customeraddresses/{{testCustomerAddressId}}
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
+
+{
+  "customerId": 51914,
+  "streetAddress": "HTTP Updated Street 15",
+  "postalCode": "00200",
+  "city": "Espoo",
+  "country": "Finland"
+}
+
+> {%
+    client.test("PUT customer address: 200", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.city === "Espoo",
+            "City not updated");
+        client.assert(response.body.postalCode === "00200",
+            "Postal code not updated");
+    });
+%}
+
+### 6. Varmista päivitys
+GET http://localhost:8081/customeraddresses/{{testCustomerAddressId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Customer address update persisted", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.city === "Espoo",
+            "Updated city not persisted");
+    });
+%}
+
+### 7. Virheellisen osoitteen luonti
+POST http://localhost:8081/customeraddresses
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
+
+{
+  "customerId": 51914,
+  "streetAddress": "",
+  "postalCode": "00100",
+  "city": "",
+  "country": "Finland"
+}
+
+> {%
+    client.test("Invalid customer address: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### 8. Osoite olemattomalle asiakkaalle
+POST http://localhost:8081/customeraddresses
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
+
+{
+  "customerId": 999999999,
+  "streetAddress": "Unknown Street 1",
+  "postalCode": "00100",
+  "city": "Helsinki",
+  "country": "Finland"
+}
+
+> {%
+    client.test("Missing customer: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### 9. Olematon osoite
+GET http://localhost:8081/customeraddresses/999999999
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Missing customer address: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### 10. Virheellinen sivukoko
+GET http://localhost:8081/customeraddresses?page=0&size=101
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Invalid pagination: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### 11. Luo tilaus käyttämään testiosoitetta
+POST http://localhost:8081/orders
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
+
+{
+  "customerId": 51914,
+  "deliveryDate": null,
+  "shippingAddressId": {{testCustomerAddressId}},
+  "status": "NEW"
+}
+
+> {%
+    client.test("Order with address created: 201", function () {
+        client.assert(response.status === 201, "Expected 201");
+        client.assert(response.body.id > 0, "Missing order ID");
+        client.assert(response.body.shippingAddressId ===
+            Number(client.global.get("testCustomerAddressId")),
+            "Shipping address not linked");
+    });
+
+    if (response.status === 201) {
+        client.global.set("testCustomerAddressOrderId",
+            String(response.body.id));
+    }
+%}
+
+### 12. Tilauksessa käytetyn osoitteen poisto estetään
+DELETE http://localhost:8081/customeraddresses/{{testCustomerAddressId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Address in use: 409", function () {
+        client.assert(response.status === 409, "Expected 409");
+    });
+%}
+
+### 13. Käytössä olevaa osoitetta ei saa siirtää toiselle asiakkaalle
+PUT http://localhost:8081/customeraddresses/{{testCustomerAddressId}}
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
+
+{
+  "customerId": 1,
+  "streetAddress": "Transfer Test Street",
+  "postalCode": "00100",
+  "city": "Helsinki",
+  "country": "Finland"
+}
+
+> {%
+    client.test("Address customer change blocked: 409", function () {
+        client.assert(response.status === 409, "Expected 409");
+    });
+%}
+
+### 14. Varmista osoitteen alkuperäinen asiakas
+GET http://localhost:8081/customeraddresses/{{testCustomerAddressId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Address owner unchanged", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.customerId === 51914,
+            "Address owner changed unexpectedly");
+    });
+%}
+
+### 15. Poista testitilaus
+DELETE http://localhost:8081/orders/{{testCustomerAddressOrderId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Delete test order: 204", function () {
+        client.assert(response.status === 204, "Expected 204");
+    });
+%}
+
+### 16. Poista nyt vapautunut osoite
+DELETE http://localhost:8081/customeraddresses/{{testCustomerAddressId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("DELETE customer address: 204", function () {
+        client.assert(response.status === 204, "Expected 204");
+    });
+%}
+
+### 17. Varmista osoitteen poisto
+GET http://localhost:8081/customeraddresses/{{testCustomerAddressId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Deleted customer address: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### 18. Olemattoman osoitteen poisto
+DELETE http://localhost:8081/customeraddresses/999999999
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Missing address DELETE: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
