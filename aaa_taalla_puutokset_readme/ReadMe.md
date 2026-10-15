@@ -18,9 +18,9 @@ Tietokannan kaikki 50 tarkistusta onnistuvat, mutta kaikkia toteutettuja tietoka
 
 3. Proseduurit (0/2 hyödynnetty) **SAKKE**
 
-- [ ] "stock_increase" – Proseduuria ei kutsuta Java-koodissa.
-- [ ] "stock_decrease" – Proseduuria ei kutsuta Java-koodissa.
-- [ ] "ProductsService.updateStock()" muuttaa varastosaldoa suoraan JPA:lla proseduurien sijaan.
+- [X] "stock_increase" – Proseduuria ei kutsuta Java-koodissa.
+- [X] "stock_decrease" – Proseduuria ei kutsuta Java-koodissa.
+- [X] "ProductsService.updateStock()" muuttaa varastosaldoa suoraan JPA:lla proseduurien sijaan.
 
 4. Eventit (2/2 käytössä tietokannassa)
 
