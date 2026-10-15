@@ -15,6 +15,22 @@ CREATE TABLE IF NOT EXISTS daily_order_count (
 );
 
 
+-- 2. POPULATE_DAILY_ORDER_COUNT
+-- Populoidaan tilastotaulu olemassa olevalla tilaushistorialla.
+-- Lasketaan tilausten lukumäärä jokaiselle päivämäärälle.
+-- Jos päivämäärä on jo olemassa, päivitetään lukumäärä.
+-- Tämä voidaan suorittaa uudelleen ilman duplikaatteja.
+
+INSERT INTO daily_order_count (date, order_count)
+SELECT
+    DATE(order_date) AS date,
+    COUNT(*) AS order_count
+FROM orders
+GROUP BY DATE(order_date)
+ON DUPLICATE KEY UPDATE
+                     order_count = VALUES(order_count);
+
+
 -- Poistetaan vanhat eventit uudelleenluontia varten.
 
 DROP EVENT IF EXISTS check_old_orders;
@@ -24,7 +40,7 @@ DROP EVENT IF EXISTS update_daily_order_count;
 DELIMITER //
 
 
--- 2. CHECK_OLD_ORDERS
+-- 3. CHECK_OLD_ORDERS
 -- Tarkistaa tilaukset tunnin välein.
 -- Merkitsee yli 7 päivää NEW-tilassa olleet
 -- tilaukset CHECK_REQUIRED-tilaan.
@@ -42,7 +58,7 @@ WHERE status = 'NEW'
 END//
 
 
--- 3. UPDATE_DAILY_ORDER_COUNT
+-- 4. UPDATE_DAILY_ORDER_COUNT
 -- Päivittää tunnin välein tämän ja edellisen
 -- päivän tilausten lukumäärät.
 
@@ -104,3 +120,19 @@ SHOW GLOBAL VARIABLES LIKE 'event_scheduler';
 -- Tarkistetaan tilastotaulun olemassaolo.
 
 SHOW TABLES LIKE 'daily_order_count';
+
+
+-- Tarkistetaan populoitujen päivämäärien määrä.
+
+SELECT COUNT(*) AS total_days
+FROM daily_order_count;
+
+
+-- Näytetään 20 viimeisintä päivää.
+
+SELECT
+    date,
+    order_count
+FROM daily_order_count
+ORDER BY date DESC
+    LIMIT 20;
