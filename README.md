@@ -13,8 +13,8 @@ Tietokannan kaikki 50 tarkistusta onnistuvat, mutta kaikkia toteutettuja tietoka
 2. Näkymät (0/3 hyödynnetty)
 
 - [X] "customer_orders" – Näkymää ei käytetä Java-repositoryssa tai REST API:ssa.
-- [ ] (in progress)"product_categories" – Näkymää ei käytetä Java-repositoryssa tai REST API:ssa.
-- [ ] (in progress)"order_totals" – Näkymää ei käytetä Java-repositoryssa tai REST API:ssa.
+- [X] "product_categories" – Näkymää ei käytetä Java-repositoryssa tai REST API:ssa.
+- [X] "order_totals" – Näkymää ei käytetä Java-repositoryssa tai REST API:ssa.
 
 3. Proseduurit (0/2 hyödynnetty)
 
