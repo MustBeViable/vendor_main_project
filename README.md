@@ -35,9 +35,9 @@ Tietokannan kaikki 50 tarkistusta onnistuvat, mutta kaikkia toteutettuja tietoka
 
 6. Käyttöoikeudet
 
-- [ ] "employee" – Käyttäjälle ei ole toteutettu erillistä sovellusyhteyttä tai toimintoa.
-- [ ] "report_viewer" – Raportointikäyttäjälle ei ole toteutettu erillistä sovellusyhteyttä.
-- [ ] Eri tietokantakäyttäjien oikeuksien toiminnallinen testaus puuttuu.
+- [X] "employee" – Käyttäjälle ei ole toteutettu erillistä sovellusyhteyttä tai toimintoa.
+- [X] "report_viewer" – Raportointikäyttäjälle ei ole toteutettu erillistä sovellusyhteyttä.
+- [X] Eri tietokantakäyttäjien oikeuksien toiminnallinen testaus puuttuu.
 
 Näiden käyttäjien ei kuitenkaan tarvitse olla REST API:n käytössä, jos tarkoituksena on osoittaa tietokantatason käyttöoikeuksien hallinta.
 
