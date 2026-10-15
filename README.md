@@ -24,8 +24,8 @@ Tietokannan kaikki 50 tarkistusta onnistuvat, mutta kaikkia toteutettuja tietoka
 
 4. Eventit (2/2 käytössä tietokannassa)
 
-- [ ] "daily_order_count" – Eventin päivittämiä tilastoja ei tarjota REST API:n kautta.
-- [ ] Eventtien onnistuneesta suorittamisesta ei ole erillistä toiminnallista testiä.
+- [X] "daily_order_count" – Eventin päivittämiä tilastoja ei tarjota REST API:n kautta.
+- [X] Eventtien onnistuneesta suorittamisesta ei ole erillistä toiminnallista testiä.
 
 5. Temporaalisuus (2/2 käytössä tietokannassa)
 
