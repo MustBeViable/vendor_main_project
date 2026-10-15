@@ -1,0 +1,62 @@
+
+### =====================================
+### 1. EMPLOYEE - SALLITTU
+### =====================================
+
+GET http://localhost:8081/reports/employee/customer-orders?customerId=51914&page=0&size=20
+Authorization: Basic employee employee_api_password
+
+
+### =====================================
+### 2. REPORT VIEWER - SALLITTU
+### =====================================
+
+GET http://localhost:8081/reports/report-viewer/daily-order-count?from=2025-10-17&to=2025-11-05&page=0&size=20
+Authorization: Basic report_viewer report_viewer_api_password
+
+
+### =====================================
+### 3. EMPLOYEE - ESTETTY
+### =====================================
+
+GET http://localhost:8081/reports/report-viewer/daily-order-count?from=2025-10-17&to=2025-11-05&page=0&size=20
+Authorization: Basic employee employee_api_password
+
+
+### =====================================
+### 4. REPORT VIEWER - ESTETTY
+### =====================================
+
+GET http://localhost:8081/reports/employee/customer-orders?customerId=51914&page=0&size=20
+Authorization: Basic report_viewer report_viewer_api_password
+
+
+### =====================================
+### 5. ADMIN - NYKYINEN JPA API
+### =====================================
+
+GET http://localhost:8081/reports/customer-orders?customerId=51914&page=0&size=20
+Authorization: Basic admin admin_api_password
+
+
+### =====================================
+### 6. ADMIN - UUSI RAPORTOINTI
+### =====================================
+
+GET http://localhost:8081/reports/report-viewer/daily-order-count?from=2025-10-17&to=2025-11-05&page=0&size=20
+Authorization: Basic admin admin_api_password
+
+
+### =====================================
+### 7. EI KIRJAUTUMISTA
+### =====================================
+
+GET http://localhost:8081/reports/employee/customer-orders?customerId=51914&page=0&size=20
+
+
+### =====================================
+### 8. VÄÄRÄ SALASANA
+### =====================================
+
+GET http://localhost:8081/reports/employee/customer-orders?customerId=51914&page=0&size=20
+Authorization: Basic employee wrong_password

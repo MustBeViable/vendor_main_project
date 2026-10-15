@@ -4,9 +4,9 @@ spring:
     name: vendor_main
 
   datasource:
-    url: ${VENDOR_DB_URL:jdbc:mariadb://localhost:3306/store_app}
-    username: ${VENDOR_DB_USERNAME:vendor_app}
-    password: ${VENDOR_DB_PASSWORD}
+    url: jdbc:mariadb://localhost:3306/store_app
+    username: vendor_app
+    password: very_very_secret_password
 
     hikari:
       maximum-pool-size: 10
@@ -18,24 +18,30 @@ spring:
     hibernate:
       ddl-auto: validate
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${JWT_ISSUER_URI}
-          audiences:
-            - ${JWT_AUDIENCE}
-
 app:
   reporting:
     employee:
       username: employee
-      password: ${EMPLOYEE_DB_PASSWORD}
+      password: another_secret_password
 
     report-viewer:
       username: report_viewer
-      password: ${REPORT_VIEWER_DB_PASSWORD}
+      password: supa_dupa_secret_password
+
+  api:
+    users:
+      employee:
+        username: employee
+        password: employee_api_password
+
+      report-viewer:
+        username: report_viewer
+        password: report_viewer_api_password
+
+      admin:
+        username: admin
+        password: admin_api_password
 
 server:
-  port: ${SERVER_PORT:8081}
-  address: ${SERVER_BIND_ADDRESS:127.0.0.1}
+  port: 8081
+  address: 127.0.0.1

@@ -21,6 +21,7 @@
 	</properties>
 
 	<dependencies>
+
 		<!-- JPA -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -33,10 +34,10 @@
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
-		<!-- JWT-tunnistautuminen ja käyttöoikeudet -->
+		<!-- HTTP Basic ja käyttöoikeudet -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
+			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
 		<!-- MariaDB -->
@@ -58,6 +59,7 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -68,4 +70,5 @@
 			</plugin>
 		</plugins>
 	</build>
+
 </project>
