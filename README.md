@@ -2,7 +2,7 @@
 
 # Vendor API – Tietokantaprojekti
 
-Spring Boot 4.1.1-, JPA- ja MariaDB-pohjainen verkkokaupan tilausjärjestelmän REST API. Tämä dokumentaatio kattaa MustBeViable-käyttäjän toteutukset.
+Spring Boot 4.1.1-, JPA- ja MariaDB-pohjainen verkkokaupan tilausjärjestelmän REST API. API on toteutettu kauppa-alustan näkökulmasta. Se ei sisällä asiakkaan ostoja.
 
 ## 1. Tietokannan alustus
 
