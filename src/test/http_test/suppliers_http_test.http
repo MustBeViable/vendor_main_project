@@ -1,0 +1,251 @@
+
+### ============================================
+### SUPPLIERS CRUD TESTS
+### VAIN TESTITIETOKANTAAN
+### Suorita pyynnöt järjestyksessä
+### ============================================
+
+### 1. Hae toimittajat sivutettuna
+GET http://localhost:8081/suppliers?page=0&size=10
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("GET suppliers: 200", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body.content),
+            "Expected Page content");
+        client.assert(response.body.content.length <= 10,
+            "Invalid page size");
+    });
+%}
+
+### 2. Luo testitoimittaja
+POST http://localhost:8081/suppliers
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
+
+{
+  "name": "API-Test-Supplier-{{$timestamp}}",
+  "contactName": "Test Contact",
+  "phone": "0401234567",
+  "email": "supplier@example.test"
+}
+
+> {%
+    client.test("POST supplier: 201", function () {
+        client.assert(response.status === 201, "Expected 201");
+        client.assert(response.body.id > 0, "Missing supplier ID");
+        client.assert(response.body.name.startsWith("API-Test-Supplier-"),
+            "Wrong supplier name");
+    });
+
+    if (response.status === 201) {
+        client.global.set("testSupplierId", String(response.body.id));
+    }
+%}
+
+### 3. Hae luotu toimittaja
+GET http://localhost:8081/suppliers/{{testSupplierId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("GET supplier by ID", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(String(response.body.id) ===
+            String(client.global.get("testSupplierId")),
+            "Wrong supplier");
+        client.assert(response.body.contactName === "Test Contact",
+            "Wrong contact");
+    });
+%}
+
+### 4. Hae toimittajia nimellä
+GET http://localhost:8081/suppliers?name=API-Test-Supplier-&page=0&size=20
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Supplier name search", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.content.some(x =>
+            String(x.id) ===
+            String(client.global.get("testSupplierId"))
+        ), "Created supplier missing from search");
+    });
+%}
+
+### 5. Päivitä toimittaja
+PUT http://localhost:8081/suppliers/{{testSupplierId}}
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
+
+{
+  "name": "API Updated Supplier",
+  "contactName": "Updated Contact",
+  "phone": "0509876543",
+  "email": "updated@example.test"
+}
+
+> {%
+    client.test("PUT supplier: 200", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.name === "API Updated Supplier",
+            "Name not updated");
+        client.assert(response.body.phone === "0509876543",
+            "Phone not updated");
+    });
+%}
+
+### 6. Varmista päivitys tietokannasta
+GET http://localhost:8081/suppliers/{{testSupplierId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Supplier update persisted", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.contactName === "Updated Contact",
+            "Contact not persisted");
+        client.assert(response.body.email === "updated@example.test",
+            "Email not persisted");
+    });
+%}
+
+### 7. Virheellinen toimittajan luonti
+POST http://localhost:8081/suppliers
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
+
+{
+  "name": "",
+  "contactName": "Invalid",
+  "phone": "0400000000",
+  "email": "invalid@example.test"
+}
+
+> {%
+    client.test("Invalid supplier name: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### 8. Olematon toimittaja
+GET http://localhost:8081/suppliers/999999999
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Missing supplier: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### 9. Olemattoman toimittajan päivitys
+PUT http://localhost:8081/suppliers/999999999
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
+
+{
+  "name": "Not Found",
+  "contactName": "Test",
+  "phone": null,
+  "email": null
+}
+
+> {%
+    client.test("Missing supplier update: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### 10. Virheellinen sivukoko
+GET http://localhost:8081/suppliers?page=0&size=101
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Invalid supplier pagination: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### 11. Lisää testitoimittajalle osoite
+POST http://localhost:8081/supplieraddresses
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
+
+{
+  "supplierId": {{testSupplierId}},
+  "streetAddress": "Supplier Test Street 1",
+  "postalCode": "00100",
+  "city": "Helsinki",
+  "country": "Finland"
+}
+
+> {%
+    client.test("Create supplier address: 201", function () {
+        client.assert(response.status === 201, "Expected 201");
+        client.assert(response.body.id > 0, "Missing address ID");
+    });
+
+    if (response.status === 201) {
+        client.global.set("testSupplierAddressId",
+            String(response.body.id));
+    }
+%}
+
+### 12. Käytössä olevan toimittajan poisto estetään
+DELETE http://localhost:8081/suppliers/{{testSupplierId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Supplier with address: 409", function () {
+        client.assert(response.status === 409, "Expected 409");
+    });
+%}
+
+### 13. Varmista, että toimittaja säilyi
+GET http://localhost:8081/suppliers/{{testSupplierId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Supplier still exists", function () {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### 14. Poista testitoimittajan osoite
+DELETE http://localhost:8081/supplieraddresses/{{testSupplierAddressId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Delete supplier address: 204", function () {
+        client.assert(response.status === 204, "Expected 204");
+    });
+%}
+
+### 15. Poista nyt toimittaja
+DELETE http://localhost:8081/suppliers/{{testSupplierId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("DELETE supplier: 204", function () {
+        client.assert(response.status === 204, "Expected 204");
+    });
+%}
+
+### 16. Varmista toimittajan poisto
+GET http://localhost:8081/suppliers/{{testSupplierId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Deleted supplier: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### 17. Olemattoman toimittajan poisto
+DELETE http://localhost:8081/suppliers/999999999
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Missing supplier DELETE: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
