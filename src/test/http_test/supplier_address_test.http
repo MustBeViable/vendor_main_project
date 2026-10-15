@@ -1,47 +1,160 @@
-### 1. POST address and save new addressId
+
+### ============================================
+### SUPPLIER ADDRESSES
+### Testit suoritetaan järjestyksessä.
+### Vain testitietokantaan.
+### ============================================
+
+### 1. Hae toimittajan 1 osoitteet
+GET http://localhost:8081/supplieraddresses?supplierId=1
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Addresses by supplier: 200", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body), "Expected array");
+        client.assert(response.body.every(x => x.supplierId === 1),
+            "Wrong supplier in results");
+    });
+%}
+
+### 2. Luo uusi osoite
 POST http://localhost:8081/supplieraddresses
+Authorization: Basic admin admin_api_password
 Content-Type: application/json
 
 {
   "supplierId": 1,
-  "streetAddress": "Testikatu 10",
+  "streetAddress": "HTTP Testikatu 10",
   "postalCode": "00100",
   "city": "Helsinki",
   "country": "Finland"
 }
 
 > {%
-  client.test("Address created", function () { client.assert(response.status === 201, "Expected 201"); });
-  if (response.status === 201) client.global.set("addressId", String(response.body.id));
+    client.test("Address POST: 201", function () {
+        client.assert(response.status === 201, "Expected 201");
+        client.assert(response.body.id > 0, "Missing ID");
+        client.assert(response.body.city === "Helsinki", "Wrong city");
+    });
+    if (response.status === 201) {
+        client.global.set("auditAddressId", String(response.body.id));
+    }
 %}
 
-### 2. GET addresses for supplier 1 (small result set)
+### 3. Hae luotu osoite ID:llä
+GET http://localhost:8081/supplieraddresses/{{auditAddressId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Address GET by ID", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(String(response.body.id) ===
+            String(client.global.get("auditAddressId")), "Wrong address");
+    });
+%}
+
+### 4. Varmista luodun osoitteen löytyminen haulla
 GET http://localhost:8081/supplieraddresses?supplierId=1
-Accept: application/json
+Authorization: Basic admin admin_api_password
 
-### 3. GET new address by saved ID
-GET http://localhost:8081/supplieraddresses/{{addressId}}
-Accept: application/json
+> {%
+    client.test("Created address appears in list", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.some(
+            x => String(x.id) === String(client.global.get("auditAddressId"))
+        ), "New address missing");
+    });
+%}
 
-### 4. PUT only the new address
-PUT http://localhost:8081/supplieraddresses/{{addressId}}
+### 5. Päivitä osoite
+PUT http://localhost:8081/supplieraddresses/{{auditAddressId}}
+Authorization: Basic admin admin_api_password
 Content-Type: application/json
 
 {
   "supplierId": 1,
-  "streetAddress": "Uusi katu 15",
+  "streetAddress": "HTTP Päivitettykatu 15",
   "postalCode": "00200",
   "city": "Espoo",
   "country": "Finland"
 }
 
-### 5. Verify update
-GET http://localhost:8081/supplieraddresses/{{addressId}}
-Accept: application/json
+> {%
+    client.test("Address PUT: 200", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.city === "Espoo", "City not updated");
+        client.assert(response.body.postalCode === "00200",
+            "Postal code not updated");
+    });
+%}
 
-### 6. DELETE only the newly created address
-DELETE http://localhost:8081/supplieraddresses/{{addressId}}
+### 6. Tarkista pysyvä päivitys
+GET http://localhost:8081/supplieraddresses/{{auditAddressId}}
+Authorization: Basic admin admin_api_password
 
-### 7. Verify deletion: expected 404
-GET http://localhost:8081/supplieraddresses/{{addressId}}
-Accept: application/json
+> {%
+    client.test("Updated address persisted", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.city === "Espoo", "Wrong persisted city");
+    });
+%}
+
+### 7. Virheellinen osoitteen luonti
+POST http://localhost:8081/supplieraddresses
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
+
+{
+  "supplierId": 1,
+  "streetAddress": "",
+  "postalCode": "00100",
+  "city": "",
+  "country": "Finland"
+}
+
+> {%
+    client.test("Missing address fields: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### 8. Olematon toimittaja
+GET http://localhost:8081/supplieraddresses?supplierId=999999999
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Missing supplier: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### 9. Olematon osoite
+GET http://localhost:8081/supplieraddresses/999999999
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Missing address: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### 10. Poista testiosoite
+DELETE http://localhost:8081/supplieraddresses/{{auditAddressId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Address DELETE: 204", function () {
+        client.assert(response.status === 204, "Expected 204");
+    });
+%}
+
+### 11. Varmista poisto
+GET http://localhost:8081/supplieraddresses/{{auditAddressId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Deleted address: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
