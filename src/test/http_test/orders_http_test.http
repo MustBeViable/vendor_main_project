@@ -1,101 +1,308 @@
-### 1. Create customer (saves customerId)
+
+### ============================================
+### CUSTOMERS + ORDERS
+### Testit suoritetaan järjestyksessä.
+### Vaatii ADMIN-tunnukset.
+### Vain testitietokantaan.
+### ============================================
+
+### 1. Luo testiasiakas
 POST http://localhost:8081/customers
+Authorization: Basic admin admin_api_password
 Content-Type: application/json
 
 {
-  "firstName": "Test",
-  "lastName": "Customer",
-  "email": "api-test-{{$timestamp}}@example.test",
-  "phone": null
+  "firstName": "HTTP",
+  "lastName": "OrderTest",
+  "email": "order-{{$timestamp}}@example.test",
+  "phone": "0401234567"
 }
 
 > {%
-  client.test("Customer created", function () { client.assert(response.status === 201, "Expected 201"); });
-  if (response.status === 201) client.global.set("customerId", String(response.body.id));
+    client.test("Customer POST: 201 ja ID", function () {
+        client.assert(response.status === 201, "Expected 201");
+        client.assert(response.body.id > 0, "Missing customer ID");
+    });
+    if (response.status === 201) {
+        client.global.set("auditCustomerId", String(response.body.id));
+    }
 %}
 
-### 2. Create empty order (saves orderId)
-POST http://localhost:8081/orders
+### 2. Virheellinen asiakkaan luonti
+POST http://localhost:8081/customers
+Authorization: Basic admin admin_api_password
 Content-Type: application/json
 
 {
-  "customerId": {{customerId}},
+  "firstName": "",
+  "lastName": "Test",
+  "email": ""
+}
+
+> {%
+    client.test("Customer validation: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### 3. Luo tilaus uudelle asiakkaalle
+POST http://localhost:8081/orders
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
+
+{
+  "customerId": {{auditCustomerId}},
   "deliveryDate": "2026-11-01T12:00:00",
   "shippingAddressId": null,
   "status": "NEW"
 }
 
 > {%
-  client.test("Order created", function () { client.assert(response.status === 201, "Expected 201"); });
-  if (response.status === 201) client.global.set("orderId", String(response.body.id));
+    client.test("Order POST: 201 ja NEW", function () {
+        client.assert(response.status === 201, "Expected 201");
+        client.assert(response.body.id > 0, "Missing order ID");
+        client.assert(response.body.status === "NEW", "Incorrect status");
+    });
+    if (response.status === 201) {
+        client.global.set("auditOrderId", String(response.body.id));
+    }
 %}
 
-### 3. List orders (paged; never load all orders at once)
-GET http://localhost:8081/orders?page=0&size=10
-Accept: application/json
+### 4. Hae tilaukset sivutettuna
+GET http://localhost:8081/orders?page=0&size=5
+Authorization: Basic admin admin_api_password
 
-### 4. Search orders by status
+> {%
+    client.test("GET orders: Page", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body.content), "Missing content");
+        client.assert(response.body.content.length <= 5, "Invalid page size");
+    });
+%}
+
+### 5. Suodata tilaukset statuksella
 GET http://localhost:8081/orders?status=NEW&page=0&size=10
-Accept: application/json
+Authorization: Basic admin admin_api_password
 
-### 5. Search orders by customer ID
-GET http://localhost:8081/orders?customerId={{customerId}}&page=0&size=10
-Accept: application/json
+> {%
+    client.test("Status filter: NEW", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.content.every(x => x.status === "NEW"),
+            "Incorrect status filter");
+    });
+%}
 
-### 6. Search orders by customer and status
-GET http://localhost:8081/orders?customerId={{customerId}}&status=NEW&page=0&size=10
-Accept: application/json
+### 6. Suodata asiakkaan ID:llä
+GET http://localhost:8081/orders?customerId={{auditCustomerId}}&page=0&size=10
+Authorization: Basic admin admin_api_password
 
-### 7. Customer's orders (returns Page<OrdersDTO>, not JPA entities)
-GET http://localhost:8081/customers/{{customerId}}/orders?page=0&size=10
-Accept: application/json
+> {%
+    client.test("Customer filter", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.content.some(
+            x => String(x.id) === String(client.global.get("auditOrderId"))
+        ), "Created order missing");
+    });
+%}
 
-### 8. Get created order by ID
-GET http://localhost:8081/orders/{{orderId}}
-Accept: application/json
+### 7. Suodata asiakkaalla ja statuksella
+GET http://localhost:8081/orders?customerId={{auditCustomerId}}&status=NEW&page=0&size=10
+Authorization: Basic admin admin_api_password
 
-### 9. Get order lines (empty until orderitems test creates one)
-GET http://localhost:8081/orders/{{orderId}}/items
-Accept: application/json
+> {%
+    client.test("Combined filters", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.content.length >= 1, "No matching orders");
+        client.assert(response.body.content.every(x => x.status === "NEW"),
+            "Incorrect status");
+    });
+%}
 
-### 10. Update order
-PUT http://localhost:8081/orders/{{orderId}}
+### 8. Asiakkaan omat tilaukset
+GET http://localhost:8081/customers/{{auditCustomerId}}/orders?page=0&size=10
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Customer orders", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.content.length >= 1, "Order missing");
+    });
+%}
+
+### 9. Hae tilaus ID:llä
+GET http://localhost:8081/orders/{{auditOrderId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Order GET by ID", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(String(response.body.id) ===
+            String(client.global.get("auditOrderId")), "Wrong order");
+    });
+%}
+
+### 10. Uuden tilauksen tilausrivit
+GET http://localhost:8081/orders/{{auditOrderId}}/items
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("New order has no items", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body), "Expected array");
+        client.assert(response.body.length === 0, "Expected empty order");
+    });
+%}
+
+### 11. Päivitä tilaus
+PUT http://localhost:8081/orders/{{auditOrderId}}
+Authorization: Basic admin admin_api_password
 Content-Type: application/json
 
 {
-  "customerId": {{customerId}},
+  "customerId": {{auditCustomerId}},
   "deliveryDate": "2026-11-05T14:00:00",
   "shippingAddressId": null,
   "status": "NEW"
 }
 
-### 11. Update order status (allowed; cancellation handled separately)
-PATCH http://localhost:8081/orders/{{orderId}}/status
+> {%
+    client.test("Order PUT: 200", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.deliveryDate.startsWith("2026-11-05"),
+            "Delivery date not updated");
+    });
+%}
+
+### 12. Päivitä tilauksen status
+PATCH http://localhost:8081/orders/{{auditOrderId}}/status
+Authorization: Basic admin admin_api_password
 Content-Type: application/json
 
 {
   "status": "PROCESSING"
 }
 
-### 12. Verify update
-GET http://localhost:8081/orders/{{orderId}}
-Accept: application/json
+> {%
+    client.test("Order PATCH: PROCESSING", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.status === "PROCESSING",
+            "Status was not updated");
+    });
+%}
 
-### 13. Missing order: expected 404
-GET http://localhost:8081/orders/999999999
-Accept: application/json
+### 13. Varmista päivitetty status
+GET http://localhost:8081/orders/{{auditOrderId}}
+Authorization: Basic admin admin_api_password
 
-### 14. Cancel: currently expected 409 until stock-safe cancellation is implemented
-PATCH http://localhost:8081/orders/{{orderId}}/status
+> {%
+    client.test("Updated status persisted", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.status === "PROCESSING",
+            "Status not persisted");
+    });
+%}
+
+### 14. Temporaalinen historia päivitysten jälkeen
+GET http://localhost:8081/orders/{{auditOrderId}}/history
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Order history includes versions", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body), "Expected array");
+        client.assert(response.body.length >= 2, "No previous version found");
+    });
+%}
+
+### 15. Peruutus estetään nykyisessä toteutuksessa
+PATCH http://localhost:8081/orders/{{auditOrderId}}/status
+Authorization: Basic admin admin_api_password
 Content-Type: application/json
 
 {
   "status": "CANCELLED"
 }
 
-### 15. DELETE empty order only AFTER orderitems test has removed its line
-DELETE http://localhost:8081/orders/{{orderId}}
+> {%
+    client.test("Cancellation blocked: 409", function () {
+        client.assert(response.status === 409, "Expected 409");
+    });
+%}
 
-### 16. Verify deletion: expected 404
-GET http://localhost:8081/orders/{{orderId}}
-Accept: application/json
+### 16. Olematon tilaus
+GET http://localhost:8081/orders/999999999
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Missing order: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### 17. Virheellinen sivunumero
+GET http://localhost:8081/orders?page=-1&size=10
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Invalid pagination: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### 18. Virheellinen sivukoko
+GET http://localhost:8081/orders?page=0&size=101
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Invalid page size: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### 19. Olemattoman asiakkaan tilaukset
+GET http://localhost:8081/customers/999999999/orders
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Missing customer: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### 20. Tilaus olemattomalle asiakkaalle
+POST http://localhost:8081/orders
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
+
+{
+  "customerId": 999999999,
+  "deliveryDate": null,
+  "shippingAddressId": null,
+  "status": "NEW"
+}
+
+> {%
+    client.test("Missing customer on order creation: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### 21. Poista luotu tyhjä tilaus
+DELETE http://localhost:8081/orders/{{auditOrderId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Order DELETE: 204", function () {
+        client.assert(response.status === 204, "Expected 204");
+    });
+%}
+
+### 22. Varmista, että tilaus poistui
+GET http://localhost:8081/orders/{{auditOrderId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Deleted order: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
