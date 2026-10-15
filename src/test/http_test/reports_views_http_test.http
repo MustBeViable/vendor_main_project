@@ -1,0 +1,24 @@
+
+### Customer orders - olemassa oleva toteutus
+GET http://localhost:8081/reports/customer-orders?customerId=1&page=0&size=20
+
+### Product categories - kategoria 1
+GET http://localhost:8081/reports/product-categories?categoryId=1&page=0&size=20
+
+### Product categories - seuraava sivu
+GET http://localhost:8081/reports/product-categories?categoryId=1&page=1&size=20
+
+### Order totals - asiakas 1
+GET http://localhost:8081/reports/order-totals?customerId=1&page=0&size=20
+
+### Order totals - seuraava sivu
+GET http://localhost:8081/reports/order-totals?customerId=1&page=1&size=20
+
+### Virheellinen kategoria (400)
+GET http://localhost:8081/reports/product-categories?categoryId=0
+
+### Virheellinen asiakas (400)
+GET http://localhost:8081/reports/order-totals?customerId=-1
+
+### Virheellinen sivukoko (400)
+GET http://localhost:8081/reports/order-totals?customerId=1&size=101
