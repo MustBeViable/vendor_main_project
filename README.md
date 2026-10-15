@@ -1,4 +1,4 @@
-# Sakke [täs](src/documentation/sakarin_documentit.md) viel ohjeet miten lisäät omat dokumentoinnit ja minne ()[src/documentation/sakarin_documentit.md]
+# Sakke [täs](src/documentation/sakarin_documentit.md) viel ohjeet miten lisäät omat dokumentoinnit ja minne.
 
 # Vendor API – Tietokantaprojekti
 
