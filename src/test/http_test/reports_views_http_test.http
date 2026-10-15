@@ -1,24 +1,273 @@
 
-### Customer orders - olemassa oleva toteutus
-GET http://localhost:8081/reports/customer-orders?customerId=1&page=0&size=20
+### ============================================
+### REPORTS + DAILY ORDER COUNT + PERMISSIONS
+### Ei muuta tietokantaa.
+### ============================================
 
-### Product categories - kategoria 1
+### 1. CUSTOMER_ORDERS-näkymä
+GET http://localhost:8081/reports/customer-orders?customerId=51914&page=0&size=20
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Customer orders report", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body.content), "Expected Page");
+        client.assert(response.body.content.length > 0, "No report rows");
+        client.assert(response.body.content.every(
+            x => x.customerId === 51914
+        ), "Wrong customer");
+    });
+%}
+
+### 2. PRODUCT_CATEGORIES-näkymä
 GET http://localhost:8081/reports/product-categories?categoryId=1&page=0&size=20
+Authorization: Basic admin admin_api_password
 
-### Product categories - seuraava sivu
+> {%
+    client.test("Product categories report", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body.content), "Expected Page");
+        client.assert(response.body.content.length > 0, "No products");
+        client.assert(response.body.content.every(
+            x => x.categoryId === 1
+        ), "Wrong category");
+    });
+%}
+
+### 3. PRODUCT_CATEGORIES - toinen sivu
 GET http://localhost:8081/reports/product-categories?categoryId=1&page=1&size=20
+Authorization: Basic admin admin_api_password
 
-### Order totals - asiakas 1
-GET http://localhost:8081/reports/order-totals?customerId=1&page=0&size=20
+> {%
+    client.test("Second category page", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.number === 1, "Expected page 1");
+    });
+%}
 
-### Order totals - seuraava sivu
-GET http://localhost:8081/reports/order-totals?customerId=1&page=1&size=20
+### 4. ORDER_TOTALS-näkymä
+GET http://localhost:8081/reports/order-totals?customerId=51914&page=0&size=20
+Authorization: Basic admin admin_api_password
 
-### Virheellinen kategoria (400)
-GET http://localhost:8081/reports/product-categories?categoryId=0
+> {%
+    client.test("Order totals report", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body.content), "Expected Page");
+        client.assert(response.body.content.length > 0, "No orders");
+        client.assert(response.body.content.every(
+            x => x.customerId === 51914
+        ), "Wrong customer");
+    });
+%}
 
-### Virheellinen asiakas (400)
-GET http://localhost:8081/reports/order-totals?customerId=-1
+### 5. ORDER_TOTALS - toinen sivu
+GET http://localhost:8081/reports/order-totals?customerId=51914&page=1&size=20
+Authorization: Basic admin admin_api_password
 
-### Virheellinen sivukoko (400)
-GET http://localhost:8081/reports/order-totals?customerId=1&size=101
+> {%
+    client.test("Second totals page", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.number === 1, "Expected page 1");
+    });
+%}
+
+### 6. DAILY_ORDER_COUNT - historialliset tilastot
+GET http://localhost:8081/reports/daily-order-count?from=2025-10-17&to=2025-11-05&page=0&size=20
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Daily order count history", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body.content), "Expected Page");
+        client.assert(response.body.content.length === 20,
+            "Expected 20 dates");
+
+        const row = response.body.content.find(
+            x => x.date === "2025-11-05"
+        );
+        client.assert(row !== undefined, "Missing 2025-11-05");
+        client.assert(row.orderCount === 178, "Expected 178 orders");
+    });
+%}
+
+### 7. DAILY_ORDER_COUNT - seuraava sivu
+GET http://localhost:8081/reports/daily-order-count?from=2025-01-01&to=2025-12-31&page=1&size=20
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Daily statistics pagination", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.number === 1, "Expected page 1");
+        client.assert(response.body.content.length <= 20,
+            "Invalid page size");
+    });
+%}
+
+### 8. DAILY_ORDER_COUNT - tuleva tyhjä aikaväli
+GET http://localhost:8081/reports/daily-order-count?from=2030-01-01&to=2030-01-31
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Empty date range returns 200", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.content.length === 0,
+            "Expected no rows");
+    });
+%}
+
+### 9. Virheellinen asiakas-ID
+GET http://localhost:8081/reports/customer-orders?customerId=0
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Invalid customer ID: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### 10. Virheellinen kategoria-ID
+GET http://localhost:8081/reports/product-categories?categoryId=-1
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Invalid category ID: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### 11. Virheellinen sivukoko
+GET http://localhost:8081/reports/order-totals?customerId=51914&size=101
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Invalid report page size: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### 12. Virheellinen päivämääräjärjestys
+GET http://localhost:8081/reports/daily-order-count?from=2026-12-31&to=2026-01-01
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Invalid date range: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### 13. Virheellinen sivunumero
+GET http://localhost:8081/reports/daily-order-count?from=2025-01-01&to=2025-12-31&page=-1
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Invalid page number: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### 14. Puuttuva from-parametri
+GET http://localhost:8081/reports/daily-order-count?to=2025-12-31
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Missing required date: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### ============================================
+### ERILLISET TIETOKANTAKÄYTTÄJÄT
+### ============================================
+
+### 15. Employee saa lukea oman raporttinsa
+GET http://localhost:8081/reports/employee/customer-orders?customerId=51914&page=0&size=20
+Authorization: Basic employee employee_api_password
+
+> {%
+    client.test("Employee report allowed", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.content.length > 0,
+            "Employee report should contain rows");
+    });
+%}
+
+### 16. Report Viewer saa lukea tilastot
+GET http://localhost:8081/reports/report-viewer/daily-order-count?from=2025-10-17&to=2025-11-05&page=0&size=20
+Authorization: Basic report_viewer report_viewer_api_password
+
+> {%
+    client.test("Report viewer allowed", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.content.length === 20,
+            "Expected 20 rows");
+    });
+%}
+
+### 17. Employee ei saa Report Viewer -raporttia
+GET http://localhost:8081/reports/report-viewer/daily-order-count?from=2025-10-17&to=2025-11-05
+Authorization: Basic employee employee_api_password
+
+> {%
+    client.test("Employee access denied: 403", function () {
+        client.assert(response.status === 403, "Expected 403");
+    });
+%}
+
+### 18. Report Viewer ei saa employee-raporttia
+GET http://localhost:8081/reports/employee/customer-orders?customerId=51914
+Authorization: Basic report_viewer report_viewer_api_password
+
+> {%
+    client.test("Report viewer access denied: 403", function () {
+        client.assert(response.status === 403, "Expected 403");
+    });
+%}
+
+### 19. Employee ei saa ADMIN-JPA-raporttia
+GET http://localhost:8081/reports/customer-orders?customerId=51914
+Authorization: Basic employee employee_api_password
+
+> {%
+    client.test("Admin JPA report forbidden: 403", function () {
+        client.assert(response.status === 403, "Expected 403");
+    });
+%}
+
+### 20. Admin saa käyttää Employee-raporttia
+GET http://localhost:8081/reports/employee/customer-orders?customerId=51914
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Admin can access employee report", function () {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### 21. Admin saa käyttää Report Viewer -raporttia
+GET http://localhost:8081/reports/report-viewer/daily-order-count?from=2025-10-17&to=2025-11-05
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Admin can access viewer report", function () {
+        client.assert(response.status === 200, "Expected 200");
+    });
+%}
+
+### 22. Ei tunnistautumista
+GET http://localhost:8081/reports/customer-orders?customerId=51914
+
+> {%
+    client.test("Anonymous denied: 401", function () {
+        client.assert(response.status === 401, "Expected 401");
+    });
+%}
+
+### 23. Väärä salasana
+GET http://localhost:8081/reports/employee/customer-orders?customerId=51914
+Authorization: Basic employee wrong_password
+
+> {%
+    client.test("Wrong password: 401", function () {
+        client.assert(response.status === 401, "Expected 401");
+    });
+%}

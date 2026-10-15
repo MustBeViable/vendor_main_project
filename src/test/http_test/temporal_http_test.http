@@ -1,109 +1,172 @@
 
-### ==========================================
-### 1. ORDERS - KAIKKI VERSIOT
-### Odotettu: 200
-### ==========================================
+### ============================================
+### TEMPORAL HISTORY
+### Orders + Products
+### Ei muuta tietokantaa.
+### ============================================
 
+### 1. Hae tilauksen 3 kaikki versiot
 GET http://localhost:8081/orders/3/history
 Authorization: Basic admin admin_api_password
 
+> {%
+    client.test("Order history: 200", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body), "Expected array");
+        client.assert(response.body.length > 0, "History missing");
+        client.assert(response.body.every(x => x.id === 3), "Wrong order");
+        client.assert(response.body[0].versionStart != null,
+            "Missing versionStart");
+    });
+    if (response.status === 200 && response.body.length > 0) {
+        client.global.set("orderAsOf",
+            String(response.body[0].versionStart));
+    }
+%}
 
-### ==========================================
-### 2. PRODUCTS - KAIKKI VERSIOT
-### Odotettu: 200
-### ==========================================
+### 2. Hae tilauksen 3 tila AS OF -kyselyllä
+GET http://localhost:8081/orders/3/history?asOf={{orderAsOf}}
+Authorization: Basic admin admin_api_password
 
+> {%
+    client.test("Order history AS OF", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body), "Expected array");
+        client.assert(response.body.length === 1,
+            "Expected exactly one version");
+        client.assert(response.body[0].id === 3, "Wrong order");
+    });
+%}
+
+### 3. Hae tuotteen 7 kaikki versiot
 GET http://localhost:8081/products/7/history
 Authorization: Basic admin admin_api_password
 
+> {%
+    client.test("Product history: 200", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body), "Expected array");
+        client.assert(response.body.length > 0, "History missing");
+        client.assert(response.body.every(x => x.id === 7),
+            "Wrong product");
+        client.assert(response.body[0].versionStart != null,
+            "Missing versionStart");
+    });
+    if (response.status === 200 && response.body.length > 0) {
+        client.global.set("productAsOf",
+            String(response.body[0].versionStart));
+    }
+%}
 
-### ==========================================
-### 3. ORDERS - AS OF
-### Vaihda asOf historiasta löytyvään
-### voimassaoloaikaan.
-### Odotettu: 200, jos versio oli voimassa.
-### ==========================================
-
-GET http://localhost:8081/orders/3/history?asOf=2026-10-15T12:00:00
+### 4. Hae tuotteen tila AS OF -kyselyllä
+GET http://localhost:8081/products/7/history?asOf={{productAsOf}}
 Authorization: Basic admin admin_api_password
 
+> {%
+    client.test("Product history AS OF", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body), "Expected array");
+        client.assert(response.body.length === 1,
+            "Expected exactly one version");
+        client.assert(response.body[0].id === 7, "Wrong product");
+    });
+%}
 
-### ==========================================
-### 4. PRODUCTS - AS OF
-### Vaihda asOf historiasta löytyvään
-### voimassaoloaikaan.
-### ==========================================
-
-GET http://localhost:8081/products/7/history?asOf=2026-10-15T12:00:00
-Authorization: Basic admin admin_api_password
-
-
-### ==========================================
-### 5. ORDERS - EI LÖYDY
-### Odotettu: 404
-### ==========================================
-
+### 5. Olematon tilaus
 GET http://localhost:8081/orders/999999999/history
 Authorization: Basic admin admin_api_password
 
+> {%
+    client.test("Missing order history: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
 
-### ==========================================
-### 6. PRODUCTS - EI LÖYDY
-### Odotettu: 404
-### ==========================================
-
+### 6. Olematon tuote
 GET http://localhost:8081/products/999999999/history
 Authorization: Basic admin admin_api_password
 
+> {%
+    client.test("Missing product history: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
 
-### ==========================================
-### 7. VIRHEELLINEN ORDER ID
-### Odotettu: 400
-### ==========================================
-
+### 7. Virheellinen tilaus-ID
 GET http://localhost:8081/orders/0/history
 Authorization: Basic admin admin_api_password
 
+> {%
+    client.test("Invalid order ID: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
 
-### ==========================================
-### 8. VIRHEELLINEN PRODUCT ID
-### Odotettu: 400
-### ==========================================
-
+### 8. Virheellinen tuote-ID
 GET http://localhost:8081/products/-1/history
 Authorization: Basic admin admin_api_password
 
+> {%
+    client.test("Invalid product ID: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
 
-### ==========================================
-### 9. VIRHEELLINEN AIKA
-### Odotettu: 400
-### ==========================================
-
-GET http://localhost:8081/orders/3/history?asOf=virheellinen
+### 9. Virheellinen asOf-arvo
+GET http://localhost:8081/orders/3/history?asOf=invalid
 Authorization: Basic admin admin_api_password
 
+> {%
+    client.test("Invalid asOf: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
 
-### ==========================================
-### 10. EI KIRJAUTUMISTA
-### Odotettu: 401
-### ==========================================
+### 10. Tilaus ennen versionoinnin alkamista
+GET http://localhost:8081/orders/3/history?asOf=2000-01-01T12:00:00
+Authorization: Basic admin admin_api_password
 
+> {%
+    client.test("Order before versioning: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### 11. Tuote ennen versionoinnin alkamista
+GET http://localhost:8081/products/7/history?asOf=2000-01-01T12:00:00
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Product before versioning: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### 12. Ilman tunnistautumista
 GET http://localhost:8081/orders/3/history
 
+> {%
+    client.test("Anonymous history access: 401", function () {
+        client.assert(response.status === 401, "Expected 401");
+    });
+%}
 
-### ==========================================
-### 11. EMPLOYEE EI SAA KÄYTTÄÄ
-### Odotettu: 403
-### ==========================================
-
+### 13. EMPLOYEE ei saa nähdä tilauksen historiaa
 GET http://localhost:8081/orders/3/history
 Authorization: Basic employee employee_api_password
 
+> {%
+    client.test("Employee history access: 403", function () {
+        client.assert(response.status === 403, "Expected 403");
+    });
+%}
 
-### ==========================================
-### 12. REPORT_VIEWER EI SAA KÄYTTÄÄ
-### Odotettu: 403
-### ==========================================
-
+### 14. REPORT_VIEWER ei saa nähdä tuotteen historiaa
 GET http://localhost:8081/products/7/history
 Authorization: Basic report_viewer report_viewer_api_password
+
+> {%
+    client.test("Viewer history access: 403", function () {
+        client.assert(response.status === 403, "Expected 403");
+    });
+%}
