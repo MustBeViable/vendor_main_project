@@ -1,12 +1,36 @@
 
-### 1. Create customer
+### ============================================
+### ORDERITEMS + STOCK TRIGGERS
+### Testit suoritetaan järjestyksessä.
+### Vaatii ADMIN-tunnukset.
+### Vain testitietokantaan.
+### ============================================
+
+### 1. Tallenna tuotteen 7 lähtösaldo
+GET http://localhost:8081/products/7
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Product exists and has stock", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.stockQuantity >= 5,
+            "Product 7 requires at least 5 units");
+    });
+    if (response.status === 200) {
+        client.global.set("itemStockBefore",
+            String(response.body.stockQuantity));
+    }
+%}
+
+### 2. Luo tilausrivitestin asiakas
 POST http://localhost:8081/customers
+Authorization: Basic admin admin_api_password
 Content-Type: application/json
 
 {
-  "firstName": "Test",
-  "lastName": "Customer",
-  "email": "orderitem-test-{{$timestamp}}@example.test",
+  "firstName": "HTTP",
+  "lastName": "ItemTest",
+  "email": "item-{{$timestamp}}@example.test",
   "phone": null
 }
 
@@ -14,19 +38,19 @@ Content-Type: application/json
     client.test("Customer created", function () {
         client.assert(response.status === 201, "Expected 201");
     });
-    if (response.status === 201 && response.body.id != null) {
-        client.global.set("customerId", String(response.body.id));
+    if (response.status === 201) {
+        client.global.set("itemCustomerId", String(response.body.id));
     }
 %}
 
-
-### 2. Create order and save orderId
+### 3. Luo tilaus
 POST http://localhost:8081/orders
+Authorization: Basic admin admin_api_password
 Content-Type: application/json
 
 {
-  "customerId": {{customerId}},
-  "deliveryDate": "2026-11-01T12:00:00",
+  "customerId": {{itemCustomerId}},
+  "deliveryDate": null,
   "shippingAddressId": null,
   "status": "NEW"
 }
@@ -35,47 +59,82 @@ Content-Type: application/json
     client.test("Order created", function () {
         client.assert(response.status === 201, "Expected 201");
     });
-    if (response.status === 201 && response.body.id != null) {
-        client.global.set("orderId", String(response.body.id));
+    if (response.status === 201) {
+        client.global.set("itemOrderId", String(response.body.id));
     }
 %}
 
-
-### 3. Verify order exists
-GET http://localhost:8081/orders/{{orderId}}
-Accept: application/json
-
-
-### 4. POST orderitem
+### 4. Lisää tilausrivi
 POST http://localhost:8081/orderitems
+Authorization: Basic admin admin_api_password
 Content-Type: application/json
 
 {
-  "orderId": {{orderId}},
+  "orderId": {{itemOrderId}},
   "productId": 7,
   "quantity": 2,
   "unitPrice": 19.90
 }
 
 > {%
-    client.test("Item created", function () {
+    client.test("OrderItem created", function () {
         client.assert(response.status === 201, "Expected 201");
+        client.assert(response.body.quantity === 2, "Wrong quantity");
     });
 %}
 
+### 5. Varmista INSERT-triggerin varastosaldon vähennys
+GET http://localhost:8081/products/7
+Authorization: Basic admin admin_api_password
 
-### 5. GET created orderitem
-GET http://localhost:8081/orderitems/{{orderId}}/7
-Accept: application/json
+> {%
+    client.test("INSERT trigger decreases stock by 2", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.stockQuantity ===
+            Number(client.global.get("itemStockBefore")) - 2,
+            "Stock was not decremented by 2");
+    });
+%}
 
+### 6. Hae lisätty tilausrivi
+GET http://localhost:8081/orderitems/{{itemOrderId}}/7
+Authorization: Basic admin admin_api_password
 
-### 6. GET orderitems belonging to created order
-GET http://localhost:8081/orders/{{orderId}}/items
-Accept: application/json
+> {%
+    client.test("OrderItem GET by composite ID", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.productId === 7, "Wrong product");
+        client.assert(response.body.quantity === 2, "Wrong quantity");
+    });
+%}
 
+### 7. Hae tilauksen kaikki rivit
+GET http://localhost:8081/orders/{{itemOrderId}}/items
+Authorization: Basic admin admin_api_password
 
-### 7. PUT update orderitem
-PUT http://localhost:8081/orderitems/{{orderId}}/7
+> {%
+    client.test("Order contains created item", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body), "Expected array");
+        client.assert(response.body.length === 1, "Expected one item");
+    });
+%}
+
+### 8. Hae tilausrivit sivutettuna
+GET http://localhost:8081/orderitems?page=0&size=10
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("OrderItems pagination", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(Array.isArray(response.body.content), "Expected content");
+        client.assert(response.body.content.length <= 10, "Too many rows");
+    });
+%}
+
+### 9. Päivitä tilausrivin määrä 2 -> 5
+PUT http://localhost:8081/orderitems/{{itemOrderId}}/7
+Authorization: Basic admin admin_api_password
 Content-Type: application/json
 
 {
@@ -83,35 +142,158 @@ Content-Type: application/json
   "unitPrice": 17.50
 }
 
+> {%
+    client.test("OrderItem PUT", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.quantity === 5, "Quantity not updated");
+        client.assert(Number(response.body.unitPrice) === 17.50,
+            "Price not updated");
+    });
+%}
 
-### 8. Verify updated orderitem
-GET http://localhost:8081/orderitems/{{orderId}}/7
-Accept: application/json
+### 10. Varmista UPDATE-triggerin varastosaldo
+GET http://localhost:8081/products/7
+Authorization: Basic admin admin_api_password
 
+> {%
+    client.test("UPDATE trigger adjusts stock to -5", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.stockQuantity ===
+            Number(client.global.get("itemStockBefore")) - 5,
+            "Stock must be initial stock minus 5");
+    });
+%}
 
-### 9. DELETE orderitem
-DELETE http://localhost:8081/orderitems/{{orderId}}
+### 11. Kaksoiskappaleen lisäys estetään
+POST http://localhost:8081/orderitems
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
 
+{
+  "orderId": {{itemOrderId}},
+  "productId": 7,
+  "quantity": 1,
+  "unitPrice": 10.00
+}
 
-### 10. Verify deletion - expected 404
-GET http://localhost:8081/orderitems/{{orderId}}/7
-Accept: application/json
+> {%
+    client.test("Duplicate item: 409", function () {
+        client.assert(response.status === 409, "Expected 409");
+    });
+%}
 
+### 12. Virheellinen määrä estetään
+PUT http://localhost:8081/orderitems/{{itemOrderId}}/7
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
 
-### 11. Verify order is empty
-GET http://localhost:8081/orders/{{orderId}}/items
-Accept: application/json
+{
+  "quantity": -1,
+  "unitPrice": 10.00
+}
 
+> {%
+    client.test("Negative quantity: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
 
-### 12. GET paginated orderitems
-GET http://localhost:8081/orderitems?page=0&size=10
-Accept: application/json
+### 13. Virheellinen hinta estetään
+PUT http://localhost:8081/orderitems/{{itemOrderId}}/7
+Authorization: Basic admin admin_api_password
+Content-Type: application/json
 
+{
+  "quantity": 5,
+  "unitPrice": -1.00
+}
 
-### 13. DELETE empty order
-DELETE http://localhost:8081/orders/{{orderId}}
+> {%
+    client.test("Negative price: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
 
+### 14. Tilausta ei saa poistaa, kun siinä on rivejä
+DELETE http://localhost:8081/orders/{{itemOrderId}}
+Authorization: Basic admin admin_api_password
 
-### 14. Verify order deletion - expected 404
-GET http://localhost:8081/orders/{{orderId}}
-Accept: application/json
+> {%
+    client.test("Order with items: 409", function () {
+        client.assert(response.status === 409, "Expected 409");
+    });
+%}
+
+### 15. Poista tilausrivi
+DELETE http://localhost:8081/orderitems/{{itemOrderId}}/7
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("OrderItem DELETE: 204", function () {
+        client.assert(response.status === 204, "Expected 204");
+    });
+%}
+
+### 16. Varmista DELETE-triggerin palauttama saldo
+GET http://localhost:8081/products/7
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("DELETE trigger restores original stock", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.stockQuantity ===
+            Number(client.global.get("itemStockBefore")),
+            "Stock was not fully restored");
+    });
+%}
+
+### 17. Poistettua tilausriviä ei löydy
+GET http://localhost:8081/orderitems/{{itemOrderId}}/7
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Deleted item: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
+
+### 18. Tilauksen rivit ovat tyhjät
+GET http://localhost:8081/orders/{{itemOrderId}}/items
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Order has no items", function () {
+        client.assert(response.status === 200, "Expected 200");
+        client.assert(response.body.length === 0, "Items remain");
+    });
+%}
+
+### 19. Virheellinen sivutus
+GET http://localhost:8081/orderitems?page=0&size=0
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Invalid page size: 400", function () {
+        client.assert(response.status === 400, "Expected 400");
+    });
+%}
+
+### 20. Poista tyhjä tilaus
+DELETE http://localhost:8081/orders/{{itemOrderId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Empty order deleted", function () {
+        client.assert(response.status === 204, "Expected 204");
+    });
+%}
+
+### 21. Varmista tilauksen poisto
+GET http://localhost:8081/orders/{{itemOrderId}}
+Authorization: Basic admin admin_api_password
+
+> {%
+    client.test("Deleted order: 404", function () {
+        client.assert(response.status === 404, "Expected 404");
+    });
+%}
