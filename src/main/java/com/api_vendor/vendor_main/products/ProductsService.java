@@ -30,6 +30,16 @@ public class ProductsService {
     }
 
     @Transactional(readOnly = true)
+    public List<Products> findByName(String name) {
+        return productsRepository.findByNameStartingWith(name);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Products> findLowStock(int threshold) {
+        return productsRepository.findByStockQuantityLessThanEqual(threshold);
+    }
+
+    @Transactional(readOnly = true)
     public Products findById(int id) {
         return productsRepository.findById(id).orElseThrow();
     }

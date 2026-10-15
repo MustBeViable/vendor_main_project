@@ -1,4 +1,3 @@
-
 package com.api_vendor.vendor_main.orders;
 
 import org.springframework.data.domain.Page;
@@ -14,19 +13,22 @@ public interface OrdersRepository
     Page<Orders> findAll(Pageable pageable);
 
     @EntityGraph(attributePaths = {"customer", "shippingAddressId"})
-    Page<Orders> findByStatus(
+    Page<Orders> findAllByOrderByOrderDateDesc(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"customer", "shippingAddressId"})
+    Page<Orders> findByStatusOrderByOrderDateDesc(
             String status,
             Pageable pageable
     );
 
     @EntityGraph(attributePaths = {"customer", "shippingAddressId"})
-    Page<Orders> findByCustomer_Id(
+    Page<Orders> findByCustomer_IdOrderByOrderDateDesc(
             Integer customerId,
             Pageable pageable
     );
 
     @EntityGraph(attributePaths = {"customer", "shippingAddressId"})
-    Page<Orders> findByCustomer_IdAndStatus(
+    Page<Orders> findByCustomer_IdAndStatusOrderByOrderDateDesc(
             Integer customerId,
             String status,
             Pageable pageable
