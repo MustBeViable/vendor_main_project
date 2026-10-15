@@ -1,4 +1,4 @@
-# Sakke (täs)[src/documentation/sakarin_documentit.md] viel ohjeet miten lisäät omat dokumentoinnit ja minne ()[src/documentation/sakarin_documentit.md]
+# Sakke [täs](src/documentation/sakarin_documentit.md) viel ohjeet miten lisäät omat dokumentoinnit ja minne ()[src/documentation/sakarin_documentit.md]
 
 # Vendor API – Tietokantaprojekti
 
@@ -212,6 +212,6 @@ Tietokannan ylläpitoa varten on laadittu kaksi suunnitelmaa, jotka sijaitsevat 
 
 - **[Tietokantamuutossuunnitelma](src/documentation/plans/tietokantamuutos_suunnitelma.md)** – Kuvaa tietokannan rakenteellisten muutosten suunnittelun, toteutuksen ja testauksen sekä mahdollisiin ongelmiin varautumisen.
 
-- **[Varmuuskopiointisuunnitelma](src/documentation/plans/varmuuskopiointi_suunnitelma.md)** – Kuvaa tietokannan varmuuskopioinnin, tietojen palauttamisen ja tietojen säilymisen varmistamisen.
+- **[Varmuuskopiointisuunnitelma](src/documentation/plans/varmuuskopiointi_suunnitellma.md)** – Kuvaa tietokannan varmuuskopioinnin, tietojen palauttamisen ja tietojen säilymisen varmistamisen.
 
 Suunnitelmien tarkoituksena on varmistaa tietokannan eheys, turvallinen ylläpito ja palautettavuus muutosten tai ongelmatilanteiden yhteydessä.
