@@ -117,13 +117,9 @@ GRANT SELECT, INSERT, UPDATE, DELETE
 
 -- Toimittajien ja yhteystietojen lukeminen.
 
-GRANT SELECT
-      ON store_app.suppliers
-          TO 'vendor_app'@'localhost';
-
-GRANT SELECT
-      ON store_app.contacts
-          TO 'vendor_app'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE
+    ON store_app.suppliers
+        TO 'vendor_app'@'localhost';
 
 
 -- Raportointinäkymien lukeminen.
