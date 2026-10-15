@@ -8,11 +8,40 @@ spring:
     username: vendor_app
     password: very_very_secret_password
 
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
   jpa:
-    show-sql: true
+    show-sql: false
     open-in-view: false
     hibernate:
       ddl-auto: validate
 
+app:
+  reporting:
+    employee:
+      username: employee
+      password: another_secret_password
+
+    report-viewer:
+      username: report_viewer
+      password: supa_dupa_secret_password
+
+  api:
+    users:
+      employee:
+        username: employee
+        password: employee_api_password
+
+      report-viewer:
+        username: report_viewer
+        password: report_viewer_api_password
+
+      admin:
+        username: admin
+        password: admin_api_password
+
 server:
   port: 8081
+  address: 127.0.0.1
