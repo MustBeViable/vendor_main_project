@@ -2,7 +2,7 @@ Tietokantaprojektin puutteet
 
 Tietokannan kaikki 50 tarkistusta onnistuvat, mutta kaikkia toteutettuja tietokantaominaisuuksia ei vielä hyödynnetä REST API:ssa.
 
-1. Indeksit (2/4 mahdollisesti hyödynnetty)
+1. Indeksit (2/4 mahdollisesti hyödynnetty) **SAKKE**
 
 - [ ] "idx_products_name" – API:ssa ei ole tuotteiden nimellä hakemista.
 - [ ] "idx_products_stock_quantity" – API:ssa ei ole varastosaldon perusteella hakemista.
@@ -16,7 +16,7 @@ Tietokannan kaikki 50 tarkistusta onnistuvat, mutta kaikkia toteutettuja tietoka
 - [X] "product_categories" – Näkymää ei käytetä Java-repositoryssa tai REST API:ssa.
 - [X] "order_totals" – Näkymää ei käytetä Java-repositoryssa tai REST API:ssa.
 
-3. Proseduurit (0/2 hyödynnetty)
+3. Proseduurit (0/2 hyödynnetty) **SAKKE**
 
 - [ ] "stock_increase" – Proseduuria ei kutsuta Java-koodissa.
 - [ ] "stock_decrease" – Proseduuria ei kutsuta Java-koodissa.
