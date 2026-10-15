@@ -1,0 +1,21 @@
+
+### Haetaan lokakuun 2026 päivittäiset tilausmäärät
+GET http://localhost:8081/reports/daily-order-count?from=2026-10-01&to=2026-10-31&page=0&size=20
+
+### Haetaan koko vuoden 2025 tilastot
+GET http://localhost:8081/reports/daily-order-count?from=2025-01-01&to=2025-12-31&page=0&size=20
+
+### Toinen sivu
+GET http://localhost:8081/reports/daily-order-count?from=2025-01-01&to=2025-12-31&page=1&size=20
+
+### Virheellinen aikaväli - odotettu 400
+GET http://localhost:8081/reports/daily-order-count?from=2026-12-31&to=2026-01-01
+
+### Virheellinen sivunumero - odotettu 400
+GET http://localhost:8081/reports/daily-order-count?from=2026-10-01&to=2026-10-31&page=-1
+
+### Liian suuri sivukoko - odotettu 400
+GET http://localhost:8081/reports/daily-order-count?from=2026-10-01&to=2026-10-31&size=101
+
+### Puuttuva aloituspäivä - odotettu 400
+GET http://localhost:8081/reports/daily-order-count?to=2026-10-31
