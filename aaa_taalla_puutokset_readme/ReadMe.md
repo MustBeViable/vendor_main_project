@@ -4,11 +4,11 @@ Tietokannan kaikki 50 tarkistusta onnistuvat, mutta kaikkia toteutettuja tietoka
 
 1. Indeksit (2/4 mahdollisesti hyödynnetty) **SAKKE**
 
-- [ ] "idx_products_name" – API:ssa ei ole tuotteiden nimellä hakemista.
-- [ ] "idx_products_stock_quantity" – API:ssa ei ole varastosaldon perusteella hakemista.
-- [ ] "idx_orders_status_order_date" – Indeksin todellista käyttöä ei ole vahvistettu "EXPLAIN"-komennolla.
-- [ ] "idx_orders_customer_order_date" – Indeksin todellista käyttöä ei ole vahvistettu "EXPLAIN"-komennolla.
-- [ ] Tilauskyselyt järjestetään "id":n mukaan, vaikka indeksit sisältävät "order_date"-sarakkeen.
+- [X] "idx_products_name" – API:ssa ei ole tuotteiden nimellä hakemista.
+- [X] "idx_products_stock_quantity" – API:ssa ei ole varastosaldon perusteella hakemista.
+- [X] "idx_orders_status_order_date" – Indeksin todellista käyttöä ei ole vahvistettu "EXPLAIN"-komennolla.
+- [X] "idx_orders_customer_order_date" – Indeksin todellista käyttöä ei ole vahvistettu "EXPLAIN"-komennolla.
+- [X] Tilauskyselyt järjestetään "id":n mukaan, vaikka indeksit sisältävät "order_date"-sarakkeen.
 
 2. Näkymät (0/3 hyödynnetty)
 
