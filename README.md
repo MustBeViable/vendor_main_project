@@ -198,6 +198,78 @@ Molemmat hyväksyvät valinnaisen `asOf`-parametrin, esimerkiksi `?asOf=2026-10-
 
 Vastauksena palautetaan JSON-taulukko, jossa ovat tietueen kentät sekä `versionStart` ja `versionEnd`.
 
+### 3.7 Tuotteet ja tuotekategoriat
+
+#### Endpointit
+
+| Metodi | Endpoint | Käyttötarkoitus |
+|--------|----------|-----------------|
+| GET | `/products` | Hakee tuotteet. Suodattimet: `?categoryId=`, `?name=`, `?maxStock=` |
+| GET | `/products/{id}` | Hakee tuotteen ID:n perusteella. |
+| POST | `/products` | Luo uuden tuotteen. |
+| PUT | `/products/{id}` | Päivittää tuotteen tiedot. |
+| DELETE | `/products/{id}` | Poistaa tuotteen. |
+| POST | `/products/{id}/stock/increase?amount=10` | Kasvattaa varastosaldoa. |
+| POST | `/products/{id}/stock/decrease?amount=5` | Vähentää varastosaldoa. |
+| GET | `/api/product-categories` | Hakee kaikki tuotekategoriat. |
+| GET | `/api/product-categories/{id}` | Hakee kategorian ID:n perusteella. |
+| POST | `/api/product-categories` | Luo uuden tuotekategorian. |
+| PUT | `/api/product-categories/{id}` | Päivittää tuotekategorian. |
+| DELETE | `/api/product-categories/{id}` | Poistaa tuotekategorian. |
+
+#### GET /products — suodattimet
+
+Kaikki suodattimet ovat valinnaisia.
+
+| Parametri | Esimerkki | Mitä tekee |
+|-----------|-----------|------------|
+| `categoryId` | `?categoryId=2` | Hakee kategorian tuotteet |
+| `name` | `?name=Sw` | Hakee tuotteet, joiden nimi alkaa "Sw" |
+| `maxStock` | `?maxStock=10` | Hakee tuotteet, joissa varasto on enintään 10 |
+
+#### Pyyntö- ja vastausesimerkki
+
+**POST /products**
+
+Pyyntö:
+```json
+{
+  "name": "Testituote",
+  "description": "Kuvaus",
+  "price": 9.99,
+  "stockQuantity": 10,
+  "categoryId": 1,
+  "supplierId": 1
+}
+```
+
+Vastaus 201 Created: sama rakenne + `id`.
+
+#### HTTP-virhekoodit
+
+| Koodi | Tilanne |
+|-------|---------|
+| 200 | Päivitys onnistui |
+| 201 | Tuote tai kategoria luotu |
+| 204 | Tuote tai kategoria poistettu |
+| 400 | Virheellinen määrä tai puuttuva nimi |
+| 404 | Tuotetta tai kategoriaa ei löydy |
+| 409 | Riittämätön varasto tai kategoriaa ei voi poistaa |
+
+Virheet palautetaan `GlobalExceptionHandler`-luokasta:
+
+```json
+{ "error": "Insufficient stock" }
+```
+
+#### Toimintarajoitukset
+
+- Varastosaldo ei voi mennä negatiiviseksi.
+- Kategoriaa ei voi poistaa, jos siihen on liitetty tuotteita.
+- Varaston muutokset tehdään proseduurien `stock_increase` ja `stock_decrease` kautta.
+
+Nämä palauttavat 409 Conflict.
+
 ## 4. Testaus
 
 ### **HUOM!** aja nämä testit vain testitietokantaan
