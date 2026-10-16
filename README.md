@@ -1,5 +1,3 @@
-# Sakke [täs](src/documentation/sakarin_documentit.md) viel ohjeet miten lisäät omat dokumentoinnit ja minne.
-
 # Vendor API – Tietokantaprojekti
 
 Spring Boot 4.1.1-, JPA- ja MariaDB-pohjainen verkkokaupan tilausjärjestelmän REST API. API on toteutettu kauppa-alustan näkökulmasta. Se ei sisällä asiakkaan ostoja.
