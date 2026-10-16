@@ -129,7 +129,11 @@ Authorization: Basic admin <API-salasana>
 
 | Endpoint | Käyttötarkoitus |
 |---|---|
+| `GET /customers` | Hakee asiakkaat sivutettuna; suodatus `name`. |
+| `GET /customers/{id}` | Hakee yksittäisen asiakkaan. |
 | `POST /customers` | Luo asiakkaan. |
+| `PUT /customers/{id}` | Päivittää asiakkaan tiedot. |
+| `DELETE /customers/{id}` | Poistaa asiakkaan, jos sillä ei ole tilauksia. |
 | `GET /customers/{id}/orders` | Hakee asiakkaan tilaukset, myös statuksella suodattaen. |
 | `GET /orders` | Hakee tilaukset sivutettuna; suodatus `customerId` ja `status`. |
 | `GET /orders/{id}` | Hakee yksittäisen tilauksen. |
@@ -139,7 +143,7 @@ Authorization: Basic admin <API-salasana>
 | `PATCH /orders/{id}/status` | Muuttaa tilauksen statuksen. |
 | `DELETE /orders/{id}` | Poistaa tilauksen. |
 
-Tilaukset palautetaan `OrdersDTO`-muodossa (mm. `id`, `customerId`, `orderDate`, `deliveryDate`, `shippingAddressId`, `status`). Sivutetut haut palauttavat `Page`-rakenteen.
+Asiakkaat palautetaan `CustomersDTO`-muodossa (`id`, `firstName`, `lastName`, `email`, `phone`). Tilaukset palautetaan `OrdersDTO`-muodossa (mm. `id`, `customerId`, `orderDate`, `deliveryDate`, `shippingAddressId`, `status`). Sivutetut haut palauttavat `Page`-rakenteen.
 
 ### 3.2 Tilausrivit
 
