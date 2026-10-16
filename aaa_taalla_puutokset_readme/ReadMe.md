@@ -8,11 +8,11 @@ Arvio perustuu main-haaran lähdekoodiin ja kurssin arviointikriteereihin. Sovel
 ## 1. Korkea prioriteetti – Toiminnallisuuden täydentäminen
 
 ### 1.1 Asiakkaiden CRUD täydelliseksi
-- [ ] Lisää `GET /customers` – kaikkien asiakkaiden hakeminen.
-- [ ] Lisää `GET /customers/{id}` – yksittäisen asiakkaan hakeminen.
-- [ ] Lisää `PUT /customers/{id}` – asiakastietojen päivittäminen.
-- [ ] Lisää `DELETE /customers/{id}` – asiakkaan poistaminen, jos viittaukset sen sallivat.
-- [ ] Lisää asiakaslistaukseen sivutus.
+- [X] Lisää `GET /customers` – kaikkien asiakkaiden hakeminen.
+- [X] Lisää `GET /customers/{id}` – yksittäisen asiakkaan hakeminen.
+- [X] Lisää `PUT /customers/{id}` – asiakastietojen päivittäminen.
+- [X] Lisää `DELETE /customers/{id}` – asiakkaan poistaminen, jos viittaukset sen sallivat.
+- [X] Lisää asiakaslistaukseen sivutus.
 
 **Perustelu:** Asiakkailla on nyt vain luonti ja asiakkaan tilausten haku. Täydellinen CRUD laajentaa keskeisen resurssin API-toiminnallisuutta.
 
