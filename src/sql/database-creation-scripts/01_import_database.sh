@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-
+# Scripti on luotu vain tuotantoympäristöön jos halutaan ajaa suoraan scriptin avulla.
+# Pelkät SQL ajot manuaalisesti riittää
 set -euo pipefail
 
 # 01_import_dump.sh
