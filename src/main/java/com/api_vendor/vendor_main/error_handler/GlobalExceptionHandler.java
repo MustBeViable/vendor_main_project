@@ -1,7 +1,11 @@
-package com.api_vendor.vendor_main.config;
+
+package com.api_vendor.vendor_main.error_handler;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -11,6 +15,40 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> handleResponseStatusException(
+            ResponseStatusException ex
+    ) {
+        String message = ex.getReason() != null
+                ? ex.getReason()
+                : "Request failed";
+
+        return ResponseEntity
+                .status(ex.getStatusCode())
+                .body(Map.of("error", message));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, String>> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "error", "Invalid parameter: " + ex.getName()
+                ));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Map<String, String>> handleMissingParameter(
+            MissingServletRequestParameterException ex
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "error", "Missing required parameter: " + ex.getParameterName()
+                ));
+    }
     // =========================================
     // 1. PROSEDUURIEN VIRHEET
     // =========================================

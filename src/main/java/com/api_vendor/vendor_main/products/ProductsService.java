@@ -1,9 +1,12 @@
+
 package com.api_vendor.vendor_main.products;
 
 import com.api_vendor.vendor_main.productcategories.ProductCategories;
 import com.api_vendor.vendor_main.productcategories.ProductCategoriesRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -41,7 +44,11 @@ public class ProductsService {
 
     @Transactional(readOnly = true)
     public Products findById(int id) {
-        return productsRepository.findById(id).orElseThrow();
+        return productsRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Product not found"
+                ));
     }
 
     @Transactional
@@ -53,7 +60,11 @@ public class ProductsService {
 
     @Transactional
     public Products update(int id, ProductsDTO dto) {
-        Products product = productsRepository.findById(id).orElseThrow();
+        Products product = productsRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Product not found"
+                ));
 
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
@@ -74,20 +85,31 @@ public class ProductsService {
     @Transactional
     public Products increaseStock(int id, int amount) {
         productsRepository.stockIncrease(id, amount);
-        return productsRepository.findById(id).orElseThrow();
+        return productsRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Product not found"
+                ));
     }
 
     @Transactional
     public Products decreaseStock(int id, int amount) {
         productsRepository.stockDecrease(id, amount);
-        return productsRepository.findById(id).orElseThrow();
+        return productsRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Product not found"
+                ));
     }
 
     private void attachCategory(Products product, Integer categoryId) {
         if (categoryId == null) return;
         ProductCategories category = productCategoriesRepository
                 .findById(categoryId)
-                .orElseThrow();
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Product category not found"
+                ));
         product.setCategory(category);
     }
 }

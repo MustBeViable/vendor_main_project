@@ -112,7 +112,8 @@ public class SupplierAddressesService {
 
     private void validate(SupplierAddressesDTO dto) {
 
-        if (dto.supplierId() == null ||
+        if (dto == null ||
+                dto.supplierId() == null ||
                 dto.streetAddress() == null ||
                 dto.streetAddress().isBlank() ||
                 dto.city() == null ||
