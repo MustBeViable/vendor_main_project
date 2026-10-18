@@ -279,6 +279,21 @@ HTTP-testit löytyvät hakemistosta `src/test/http_test/`. Niillä testataan onn
 
 Tietokantarakenteiden tarkistamiseen käytetään `09_verify.sql`-skriptiä. Kirjoittavat HTTP-testit tulee suorittaa erillisessä testitietokannassa.
 
+### 4.1 Transaktiot ja samanaikaisuus
+
+Projektissa on kaksi automaattista JUnit-testiä, jotka todistavat transaktioiden ja lukkojen toiminnan:
+
+| Testi | Mitä todistaa |
+|-------|---------------|
+| `OrderTransactionTest.insufficientStockDoesNotCreateOrderItem` | Epäonnistunut tilausrivi peruu koko transaktion. Tilausriviä ei synny eikä varastosaldo muutu. |
+| `ConcurrentOrderTest.twoConcurrentOrdersDoNotOversell` | Kaksi samanaikaista tilausta ei ylitä varastosaldoa. Varasto ei mene negatiiviseksi. |
+
+Testit voi ajaa erikseen:
+
+```bash
+./mvnw test -Dtest=OrderTransactionTest
+./mvnw test -Dtest=ConcurrentOrderTest
+```
 
 ## 5. Tietokannan ylläpitosuunnitelmat
 
