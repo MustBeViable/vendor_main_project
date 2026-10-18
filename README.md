@@ -14,13 +14,38 @@ Dumppi ei sisälly GitHub-repositorioon, sillä sen koko ylittää GitHubin **10
 
 **2. Tuo tietokanta.**
 
-Varmista, että MariaDB on käynnissä. Suorita projektin juurihakemistosta:
+Varmista, että MariaDB on käynnissä. Suorita komennot projektin juurihakemistosta.
+
+**Linux/macOS (Bash) tai Windows (Git Bash):**
 
 ```bash
 bash src/sql/database-creation-scripts/01_import_database.sh
 ```
 
 Skripti luo `store_app`-tietokannan tarvittaessa ja tuo dumpin, jos tietokanta on tyhjä. Se ei korvaa olemassa olevia tietoja.
+
+**Windows (PowerShell, ilman Bashia):**
+
+Varmista, että `mariadb`-komento löytyy PATH-ympäristömuuttujasta ja että `database/schema_populated_dump.sql` on ladattu. Suorita PowerShellissä projektin juurihakemistosta:
+
+```powershell
+if (-not (Test-Path 'database\schema_populated_dump.sql')) { throw 'SQL-dumppi puuttuu database-kansiosta.' }
+
+mariadb -h 127.0.0.1 -P 3306 -u root -p -e "CREATE DATABASE IF NOT EXISTS store_app CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+if ($LASTEXITCODE -ne 0) { throw 'Tietokannan luonti epäonnistui.' }
+
+$tableCount = mariadb -h 127.0.0.1 -P 3306 -u root -p -N -B -e "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'store_app' AND TABLE_TYPE IN ('BASE TABLE', 'SYSTEM VERSIONED');"
+if ($LASTEXITCODE -ne 0) { throw 'Tietokannan taulujen tarkistus epäonnistui.' }
+
+if ([int]$tableCount -eq 0) {
+    cmd /c "mariadb -h 127.0.0.1 -P 3306 -u root -p store_app < database\schema_populated_dump.sql"
+    if ($LASTEXITCODE -ne 0) { throw 'SQL-dumpin tuonti epäonnistui.' }
+} else {
+    Write-Host "Tietokannassa on jo $tableCount taulua. Dumpin tuonti ohitettiin."
+}
+```
+
+PowerShell-ohje tekee saman alustuksen kuin Bash-skripti: olemassa olevan tietokannan tietoja ei korvata. Seuraavan kohdan SQL-skriptit 02–09 suoritetaan molemmissa ympäristöissä samalla tavalla.
 
 **3. Suorita loput SQL-skriptit järjestyksessä.**
 
@@ -98,10 +123,18 @@ Asetukset löytyvät `application.yaml`-tiedostosta. Nykyiset plaintext-tunnukse
 
 ## 3. REST API:n käyttö
 
-Käynnistä Spring Boot -sovellus:
+Käynnistä Spring Boot -sovellus projektin juurihakemistosta:
+
+**Linux/macOS (Bash):**
 
 ```bash
 ./mvnw spring-boot:run
+```
+
+**Windows (PowerShell):**
+
+```powershell
+.\mvnw.cmd spring-boot:run
 ```
 
 API toimii osoitteessa `http://localhost:8081`.
