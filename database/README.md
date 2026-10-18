@@ -1,0 +1,1 @@
+### Lisää populoitu skeema tähän kansioon. Dumpin voi ladata [täältä](https://metropoliafi-my.sharepoint.com/:f:/g/personal/olliv_metropolia_fi/IgBdZmJp6Q7iRKQvNcspUNDvARFJYSnNNuVkp_79RcJ7lUw?e=u4Y8ro). 
